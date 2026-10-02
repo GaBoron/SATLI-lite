@@ -8,8 +8,8 @@
 
 1. 从本项目的构建产物或 [GitHub Releases](https://github.com/GaBoron/SATLI-lite/releases) 获取 `satli-lite.star`。
 2. 将文件放入 `<Millennium>/plugins/satli-lite.star`，在 Millennium 中启用 SATLI lite，然后重启 Steam。
-3. 打开库存游戏页，点击“成就翻译”；也可以从 Millennium 的 SATLI lite 设置页打开“管理成就翻译”。
-4. 刷新翻译库，选择译本与语言，预览后点击“下载并应用”。
+3. 打开库存游戏页，点击“成就翻译”；也可以从 Millennium 的 SATLI lite 设置页打开“管理译本”。
+4. 在管理界面的游戏列表中搜索或筛选，选择译本与语言，预览后点击“下载并应用”。已下载的游戏可切换译本、停用翻译或恢复上一版。
 
 库存按钮依赖 Steam 当前页面结构。按钮未出现时，可使用插件设置页入口；实际 Steam 中的按钮、成就通知、覆盖层及内嵌网页覆盖仍需验收。
 
@@ -23,7 +23,9 @@
 - 从本项目 GitHub 正式 Release 自动更新插件，保留旧包，重启 Steam 后生效。
 - 使用 GitHub 或自定义 HTTPS 翻译库镜像；网络代理沿用 Millennium 设置。
 
-翻译应用到 Steam 的结构化成就响应、库存缓存和通知记录；活动页与内嵌网页另有精确文本覆盖。它只替换显示文本，保留解锁状态、进度和图标。停用后，已呈现的部分成就卡片可能需要切换页面才能重新显示原文。
+显示替换范围与 SATLI 内置 Millennium 插件一致：自己的成就、好友成就、游戏会话历史、应用详情、库存成就与活动缓存，以及桌面、游戏内和 Big Picture 成就通知。活动页与 Steam 内嵌网页还使用整页精确文本覆盖，不依赖成就区域的类名。插件的预览与编辑界面不参与替换。
+
+它只替换显示文本，保留解锁状态、进度和图标。停用后，已呈现的部分成就卡片可能需要切换页面才能重新显示原文。
 
 本插件使用翻译库自动生成的 JSON，不读写本机成就 BIN。完整 BIN/ZIP 制作与投稿仍可使用 SATLI 或 [Steam Achievement Localizer Skill](https://github.com/GaBoron/steam-achievement-localizer-skill)。
 

@@ -18,7 +18,7 @@ export class PluginRuntime {
   private onApplied?: () => Promise<void>;
   private view: ViewState = {
     state: { version: 1, apps: {}, settings: { enabled: true, language: 'schinese', auto_translation_updates: false, auto_plugin_updates: true, catalog_base: '' } },
-    update: { current_version: PLUGIN_VERSION, available: false }, busy: false, message: '',
+    update: { current_version: PLUGIN_VERSION, available: false }, busy: false, message: '', messageTone: 'quiet',
   };
 
   snapshot = (): ViewState => this.view;
@@ -35,7 +35,10 @@ export class PluginRuntime {
 
   async initialize(): Promise<void> {
     try { this.publish(await rpc<BackendSnapshot>(backend.getState())); }
-    catch (error) { this.publish({ message: error instanceof Error ? error.message : '读取本地数据失败' }); }
+    catch (error) {
+      this.publish({ message: error instanceof Error ? error.message : '读取本地数据失败', messageTone: 'error' });
+      console.warn('SATLI lite read state failed');
+    }
   }
 
   startBackground(onApplied: () => Promise<void>): void {
@@ -53,15 +56,15 @@ export class PluginRuntime {
   private async perform<T>(workflow: string, label: string, operation: () => Promise<T>, applied = false): Promise<T> {
     const work = this.queue.then(async () => {
       if (this.disposed) throw new Error('插件已停用');
-      this.publish({ busy: true, message: label });
+      this.publish({ busy: true, message: label, messageTone: 'progress' });
       try {
         const result = await operation();
         const snapshot = await rpc<BackendSnapshot>(backend.getState());
-        this.publish({ ...snapshot, message: `${label}完成` });
+        this.publish({ ...snapshot, message: `${label}完成`, messageTone: 'success' });
         if (applied) await this.onApplied?.();
         return result;
       } catch (error) {
-        this.publish({ message: error instanceof Error ? error.message : '操作失败' });
+        this.publish({ message: error instanceof Error ? error.message : '操作失败', messageTone: 'error' });
         console.warn(`SATLI lite ${workflow} failed`);
         throw error;
       } finally {

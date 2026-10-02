@@ -9,4 +9,6 @@ if (!version) throw new Error('millennium.toml must contain a three-part version
 mkdirSync(join(root, '.generated'), { recursive: true });
 writeFileSync(join(root, '.generated/version.ts'), `export const PLUGIN_VERSION = '${version}';\n`);
 writeFileSync(join(root, 'backend/generated_version.lua'), `return "${version}"\n`);
-writeFileSync(join(root, '.generated/styles.ts'), `export const STYLE = ${JSON.stringify(readFileSync(join(root, 'frontend/styles.css'), 'utf8'))};\n`);
+const styles = ['styles.css', 'translation_workspace.css', 'translation_preview.css', 'settings.css']
+  .map(file => readFileSync(join(root, 'frontend', file), 'utf8')).join('\n');
+writeFileSync(join(root, '.generated/styles.ts'), `export const STYLE = ${JSON.stringify(styles)};\n`);

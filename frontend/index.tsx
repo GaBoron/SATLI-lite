@@ -1,4 +1,4 @@
-import { definePlugin, DialogBody, DialogHeader, ModalRoot, showModal } from 'millennium';
+import { definePlugin, ModalRoot, showModal } from 'millennium';
 import { DisplayOverrideController } from '../shared/display_override';
 import { installSteamApiOverrides } from './steam_api_override';
 import { PluginRuntime } from './plugin_runtime';
@@ -29,10 +29,12 @@ export default definePlugin(async () => {
   const removeOverrides = installSteamApiOverrides(controller);
   const modals = new Set<{ Close: () => void }>();
   const openTranslations = (appId?: string): void => {
-    const modal = showModal(<ModalRoot><DialogHeader>SATLI lite · 成就翻译</DialogHeader><DialogBody>
-      <TranslationPanel runtime={runtime} initialAppId={appId} />
-    </DialogBody></ModalRoot>, window, { strTitle: 'SATLI lite' });
+    const close = (): void => modal.Close();
+    const modal = showModal(<ModalRoot className="satli-lite-modal" bAllowFullSize bHideCloseIcon onCancel={close} onEscKeypress={close} closeModal={close}>
+      <TranslationPanel runtime={runtime} initialAppId={appId} onClose={close} />
+    </ModalRoot>, window, { strTitle: 'SATLI lite', bNeverPopOut: true, bHideActionIcons: true, fnOnClose: () => modals.delete(modal) });
     modals.add(modal);
+    console.debug('SATLI lite translation manager opened');
   };
   const removeButton = attachLibraryButton(document, openTranslations);
   runtime.startBackground(async () => { await controller?.refreshNow(); });

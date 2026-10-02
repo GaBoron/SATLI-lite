@@ -37,7 +37,6 @@ interface AppliedValue {
 }
 
 const ATTRIBUTES = ['aria-label', 'title'] as const;
-const ACHIEVEMENT_SURFACES = '[class*="achiev" i], [class*="activity" i], [class*="notification" i], [data-satli-achievement]';
 
 export class DisplayOverrideController {
   private observer?: MutationObserver;
@@ -206,8 +205,9 @@ export class DisplayOverrideController {
   }
 
   private applyTextNode(node: Text): void {
-    if (node.parentElement?.closest('[data-satli-lite], script, style, textarea, input, [contenteditable]')) return;
-    if (!node.parentElement?.closest(ACHIEVEMENT_SURFACES)) return;
+    // Match SATLI's document-wide exact-text fallback, while leaving our own
+    // bilingual preview and editor under the user's control.
+    if (node.parentElement?.closest('[data-satli-lite]')) return;
     const value = node.nodeValue ?? '';
     const applied = this.appliedText.get(node);
     if (applied?.replacement === value) {
@@ -228,8 +228,7 @@ export class DisplayOverrideController {
   }
 
   private applyAttributes(element: Element): void {
-    if (element.closest('[data-satli-lite], script, style, textarea, input, [contenteditable]')) return;
-    if (!element.closest(ACHIEVEMENT_SURFACES)) return;
+    if (element.closest('[data-satli-lite]')) return;
     for (const attribute of ATTRIBUTES) {
       const value = element.getAttribute(attribute);
       const applied = this.appliedAttributes.get(element)?.get(attribute);

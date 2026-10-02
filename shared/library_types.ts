@@ -63,6 +63,7 @@ export interface ViewState {
   update: PluginUpdate;
   busy: boolean;
   message: string;
+  messageTone: 'quiet' | 'progress' | 'success' | 'error';
 }
 
 export function unwrapFfi(value: unknown): unknown {

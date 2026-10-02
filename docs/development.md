@@ -14,8 +14,11 @@
 | `scripts/lua_build.mjs` | 在生成目录准备 Lua 的 UTF-8 字节转义，避免 Starlight 压缩中文字符串时产生乱码 |
 | `frontend/plugin_runtime.ts` | 串行协调操作，发布 UI 状态，调度自动更新 |
 | `frontend/library_context.ts`、`steam_library.ts` | 识别当前库存页，注入按钮，读取已安装游戏 |
-| `frontend/translation_panel.tsx`、`translation_preview.tsx`、`batch_translations.tsx` | Steam 内的下载、预览、编辑和批量操作 |
-| `shared/display_override.ts`、`achievement_record.ts` | API name 对应的文本变换及限定成就/活动/通知区域的 DOM 覆盖 |
+| `frontend/translation_panel.tsx`、`game_browser.tsx`、`translation_details.tsx` | 组装 Steam 内的游戏列表与译本详情，隔离选择和异步预览状态 |
+| `frontend/translation_choices.ts`、`translation_files.tsx` | 译本与语言选项、缺失选项回退、本地导入与导出 |
+| `frontend/ui_controls.tsx`、`styles.css`、`translation_workspace.css`、`translation_preview.css`、`settings.css` | 共用控件及深色 Material Design 风格；布局适应面板宽度，尊重减少动画设置 |
+| `frontend/translation_preview.tsx`、`settings_content.tsx`、`batch_translations.tsx` | 成就对照与编辑、设置及可停止的批量操作 |
+| `shared/display_override.ts`、`achievement_record.ts` | API name 对应的文本变换与整页精确 DOM 覆盖 |
 | `frontend/achievement_payload.ts`、`achievement_cache.ts`、`steam_api_override.ts` | 适配 Steam 响应、库存缓存与回调 |
 | `webview/preload.ts`、`backend/achievement_toast_patch.lua` | 网页加载与成就通知记录的入口 |
 
@@ -29,7 +32,9 @@ JSON 模块采用 [Lunajson](https://github.com/grafi-tt/lunajson/tree/e3a9666eb
 
 配套 JSON 包含格式版本、App ID、版本 ID、源 BIN 标识、语言列表，以及按 API name 索引的 `translations`。格式由翻译库的 `workflow-scripts/translation_json.py` 生成，并纳入刷新、投稿、重命名及仓库检查。插件不会解析 BIN，也不从英文显示文本猜测成就 ID。
 
-DOM 覆盖只在成就、活动或通知区域替换精确匹配且无歧义的源字符串，跳过编辑控件和插件自己的 UI。结构化变换仅修改既有文本字段，不改变非文本字段。Steam 的缓存及通知接口可能随客户端更新变化。
+显示入口及字段变换与 SATLI 的 `satli-display-bridge` 对齐：自己的成就、好友成就、会话历史、原生应用详情缓存、实时应用详情、加载后的 `achievements`/`achievementmap` 缓存、GameSessions 分组通知，以及 protobuf 成就通知记录补丁。DOM 回退与 SATLI 一样扫描整个文档的文本、`aria-label` 和 `title`，只接受精确匹配且无歧义的源字符串；仅跳过标记为 `data-satli-lite` 的插件界面，保留原文对照和用户编辑。结构化变换仅修改既有文本字段，不改变非文本字段。Steam 的缓存及通知接口可能随客户端更新变化。
+
+管理界面在 Steam 的模态窗口中使用列表与详情布局，不弹出独立窗口。译本选项包括 Catalog V2 中的所有版本和已安装的本地版本；各版本单独提供语言、说明、来源与更新状态。异步预览在游戏或译本切换后丢弃过期结果。界面共用搜索、按钮、开关及操作状态控件，样式由版本生成脚本合并到同一个包内字符串，不请求外部字体或 UI 库。
 
 ## 本地保存
 
