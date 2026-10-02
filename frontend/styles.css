@@ -1,0 +1,39 @@
+.satli-lite-library-button {
+  align-self: center; margin: 0 12px; padding: 9px 16px; border: 1px solid #51667b;
+  border-radius: 3px; background: #253b51; color: #e3edf7; cursor: pointer; font: inherit;
+}
+.satli-lite-panel { color: #d6d7d8; font-size: 14px; line-height: 1.55; }
+.satli-lite-panel input:not([type="checkbox"]):not([type="file"]), .satli-lite-panel select,
+.satli-lite-panel textarea {
+  box-sizing: border-box; padding: 8px 10px; border: 1px solid #3b4c60; border-radius: 3px;
+  background: #121b27; color: #e4e9ef; font: inherit;
+}
+.satli-lite-panel textarea { min-height: 72px; width: 100%; resize: vertical; }
+.satli-lite-panel button { cursor: pointer; padding: 8px 13px; background: #34465b; border: 0;
+  border-radius: 3px; color: #e4e9ef; font: inherit; }
+.satli-lite-panel button:hover, .satli-lite-library-button:hover { background: #416481; }
+.satli-lite-panel button.primary { background: #236395; }
+.satli-lite-panel button:disabled { opacity: .45; cursor: default; }
+.satli-lite-panel a { color: #69b6e9; }
+.satli-lite-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin: 12px 0; }
+.satli-lite-toolbar input:not([type="checkbox"]) { flex: 1; min-width: 130px; }
+.satli-lite-columns { display: grid; grid-template-columns: minmax(130px, 230px) minmax(300px, 1fr); gap: 18px; }
+.satli-lite-game-list { max-height: 52vh; overflow: auto; }
+.satli-lite-game-list button { display: block; width: 100%; text-align: left; margin: 3px 0; background: #1b2838; }
+.satli-lite-game-list button.selected { background: #315777; }
+.satli-lite-game-list small { display: block; color: #a1afbc; }
+.satli-lite-detail { min-width: 0; }
+.satli-lite-detail h3 { margin-top: 0; color: #f1f4f7; font-size: 20px; }
+.satli-lite-preview > input { width: 100%; }
+.satli-lite-scroll { max-height: 35vh; overflow: auto; margin-top: 12px; }
+.satli-lite-scroll article { padding: 12px 0; border-bottom: 1px solid #34465b; }
+.satli-lite-scroll code { display: block; color: #95a6b7; font-size: 11px; }
+.satli-lite-scroll strong { display: block; margin: 5px 0; }
+.satli-lite-scroll p { margin: 4px 0; white-space: pre-wrap; }
+.satli-lite-original, .satli-lite-muted, .satli-lite-attribution { color: #97a8b9; font-size: 12px; }
+.satli-lite-warning { color: #e7bf75; }
+.satli-lite-setting { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 14px 0; }
+.satli-lite-setting > input:not([type="checkbox"]) { width: 100%; }
+.satli-lite-batch { border-top: 1px solid #34465b; padding-top: 18px; margin-top: 20px; }
+.satli-lite-batch label > input { display: block; width: 100%; margin-top: 8px; }
+@media (max-width: 640px) { .satli-lite-columns { grid-template-columns: 1fr; } .satli-lite-game-list { max-height: 20vh; } }

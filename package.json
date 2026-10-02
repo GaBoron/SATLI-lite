@@ -1,0 +1,16 @@
+{
+  "name": "satli-lite",
+  "private": true,
+  "description": "Steam achievement translations inside Millennium",
+  "scripts": {
+    "prepare": "node scripts/version.mjs && starlight lsp",
+    "typecheck": "node scripts/version.mjs && starlight lsp && tsc --noEmit && tsc --noEmit -p webview/tsconfig.json",
+    "build": "node scripts/build.mjs"
+  },
+  "devDependencies": {
+    "@steambrew/starlight": "1.1.6",
+    "@types/react": "19.1.1",
+    "@types/react-dom": "19.1.1",
+    "typescript": "5.9.3"
+  }
+}

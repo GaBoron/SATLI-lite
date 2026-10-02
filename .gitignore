@@ -1,0 +1,9 @@
+node_modules/
+.millennium/
+.codex/
+.generated/
+backend/generated_version.lua
+dist/
+*.star
+
+.millennium/lsp/
