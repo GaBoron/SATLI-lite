@@ -2,12 +2,14 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { root, version } from './version.mjs';
+import { prepareLuaBuild } from './lua_build.mjs';
 
 mkdirSync(join(root, 'dist'), { recursive: true });
 // The npm wrapper locates the platform binary; run it through Node without a shell.
 const packageInfo = JSON.parse(readFileSync(join(root, 'node_modules/@steambrew/starlight/package.json'), 'utf8'));
 const bin = typeof packageInfo.bin === 'string' ? packageInfo.bin : packageInfo.bin.starlight;
-for (const args of [['pack', '--release'], ['verify', 'dist/satli-lite.star']]) {
+const config = prepareLuaBuild(root);
+for (const args of [['pack', '--release', '--config', config], ['verify', 'dist/satli-lite.star']]) {
   const result = spawnSync(process.execPath, [join(root, 'node_modules/@steambrew/starlight', bin), ...args], { cwd: root, stdio: 'inherit' });
   if (result.status !== 0) process.exit(result.status || 1);
 }

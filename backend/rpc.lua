@@ -1,4 +1,4 @@
-local json = require("cjson")
+local json = require("json_codec")
 local logger = require("logger")
 local state = require("state")
 local catalog = require("catalog")

@@ -9,7 +9,9 @@
 | `backend/catalog.lua`、`network.lua`、`translation_format.lua` | 下载 V2 索引与 JSON，验证身份、大小、成就数和语言 |
 | `backend/translations.lua`、`state.lua`、`storage.lua` | 管理启用状态、缓存、本地编辑和历史恢复；写入前验证并备份 |
 | `backend/bridge_snapshot.lua` | 将已启用译本投影为显示覆盖快照，并在提交前检查总量 |
+| `backend/json_codec.lua`、`vendor/lunajson/` | 随包提供纯 Lua JSON 编解码，保留空数组、空对象和 null；数组长度随编辑变化 |
 | `backend/updater.lua`、`update_package.lua` | 限定 GitHub 发布来源，验证 STAR 章节与 MessagePack 元数据，备份旧包并替换 |
+| `scripts/lua_build.mjs` | 在生成目录准备 Lua 的 UTF-8 字节转义，避免 Starlight 压缩中文字符串时产生乱码 |
 | `frontend/plugin_runtime.ts` | 串行协调操作，发布 UI 状态，调度自动更新 |
 | `frontend/library_context.ts`、`steam_library.ts` | 识别当前库存页，注入按钮，读取已安装游戏 |
 | `frontend/translation_panel.tsx`、`translation_preview.tsx`、`batch_translations.tsx` | Steam 内的下载、预览、编辑和批量操作 |
@@ -18,6 +20,8 @@
 | `webview/preload.ts`、`backend/achievement_toast_patch.lua` | 网页加载与成就通知记录的入口 |
 
 显示模块源自 SATLI 的 `satli-display-bridge`。此处改为插件自身下载与持久化译本，不依赖桌面 SATLI 写入桥接文件。前端通过 Starlight 生成的 FFI 调用后端；返回值为 JSON 字符串，不使用已弃用的 `callServerMethod`。
+
+JSON 模块采用 [Lunajson](https://github.com/grafi-tt/lunajson/tree/e3a9666eb1275741e887e29926b144f8daee3bef) 的 decoder 与 encoder，MIT 许可声明随源码打包。不依赖宿主的原生 JSON 模块或额外 DLL。日志使用英文工作流标识，界面文案仍为中文，日志不包含翻译正文或用户输入。
 
 ## 翻译数据
 
@@ -49,10 +53,14 @@ DOM 覆盖只在成就、活动或通知区域替换精确匹配且无歧义的�
 
 Release 标签使用 `vMAJOR.MINOR.PATCH`，须与包内及清单版本一致。自更新只查询 `GaBoron/SATLI-lite` 的最新正式 Release，拒绝草稿、预发布、其他来源、插件身份或版本错配、截断及章节校验失败的包。下载包中的 Lua shim 不会在验证期间执行。STAR 的签名策略最终由 Millennium 处理；本项目本地构建为未签名包。
 
+最新 Release 查询返回 HTTP 404 时视为暂无可用更新；其他 HTTP 错误仍显示失败。
+
 安装位置必须为 `<Millennium>/plugins/satli-lite.star`。更新前核对现有包的身份和运行版本，保留旧包，再替换文件；替换失败则恢复旧包。插件不会重启 Steam。源码开发模式不能在未安装 STAR 时执行自更新。
 
 ## 检查与实际验收
 
 `npm run typecheck` 检查主前端与 WebKit 类型，`npm run build` 打包并校验全部 STAR 章节。临时模拟环境可以验证 JSON 接受与拒绝、下载与状态变更、编辑与恢复、DOM 文本与属性、API 数据字段保持、文件写入失败及自更新回滚。不要保留持久测试目录。
+
+构建在 `.generated/backend/` 准备 Lua 源码，并生成忽略于 Git 的 `.millennium-build.toml`，只在字符串字面量中转义非 ASCII 字符。维护和类型生成仍使用 `backend/` 原始源码；打包后的中文提示保持 UTF-8。
 
 类型、打包和模拟检查不代表实际 Steam 验收。实际客户端应检查库存页切换、已有缓存、成就侧栏、解锁通知、活动、内嵌网页、离线启动、停用及 Steam 重启；库存按钮失败时可从 Millennium 设置进入同一管理界面。覆盖层与 Big Picture 的目标附加由实际 Millennium 环境决定。

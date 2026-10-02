@@ -9,12 +9,13 @@ function M.base(value)
     return value:sub(-1) == "/" and value or value .. "/"
 end
 
-function M.get(url, maximum)
+function M.get(url, maximum, allow_missing)
     local response = http.get(url, {
         timeout = 25, follow_redirects = true, verify_ssl = true,
         user_agent = "SATLI-lite", headers = { ["Accept"] = "application/json" },
     })
     assert(response, "网络请求失败，请检查 Millennium 的网络与代理设置")
+    if allow_missing and response.status == 404 then return nil end
     assert(response.status == 200, "下载失败（HTTP " .. tostring(response.status) .. "）")
     assert(type(response.body) == "string" and #response.body > 0 and #response.body <= maximum, "下载内容大小无效")
     return response.body

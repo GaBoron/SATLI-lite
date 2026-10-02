@@ -1,4 +1,4 @@
-local json = require("cjson")
+local json = require("json_codec")
 local storage = require("storage")
 local format = require("translation_format")
 local network = require("network")

@@ -50,7 +50,7 @@ export class PluginRuntime {
     this.listeners.clear();
   }
 
-  async perform<T>(label: string, operation: () => Promise<T>, applied = false): Promise<T> {
+  private async perform<T>(workflow: string, label: string, operation: () => Promise<T>, applied = false): Promise<T> {
     const work = this.queue.then(async () => {
       if (this.disposed) throw new Error('插件已停用');
       this.publish({ busy: true, message: label });
@@ -62,7 +62,7 @@ export class PluginRuntime {
         return result;
       } catch (error) {
         this.publish({ message: error instanceof Error ? error.message : '操作失败' });
-        console.warn(`SATLI lite ${label} failed`);
+        console.warn(`SATLI lite ${workflow} failed`);
         throw error;
       } finally {
         this.publish({ busy: false });
@@ -72,17 +72,17 @@ export class PluginRuntime {
     return work;
   }
 
-  refresh = (): Promise<CatalogSnapshot> => this.perform('刷新翻译库', () => rpc(backend.refreshCatalog()));
-  preview = (appId: string, variantId: string): Promise<TranslationDocument> => this.perform('下载预览', () => rpc(backend.previewTranslation(appId, variantId)));
-  install = (appId: string, variantId: string, language: string): Promise<unknown> => this.perform('应用翻译', () => rpc(backend.installTranslation(appId, variantId, language)), true);
-  toggle = (appId: string, enabled: boolean): Promise<unknown> => this.perform(enabled ? '启用翻译' : '恢复原文', () => rpc(backend.toggleTranslation(appId, enabled)), true);
-  restore = (appId: string): Promise<unknown> => this.perform('恢复上一版', () => rpc(backend.restoreTranslation(appId)), true);
-  configure = (settings: Partial<Settings>): Promise<unknown> => this.perform('保存设置', () => rpc(backend.configure(JSON.stringify(settings))), true);
-  import = (text: string, language: string): Promise<unknown> => this.perform('导入翻译', () => rpc(backend.importTranslation(text, language)), true);
-  export = (appId: string): Promise<TranslationDocument> => this.perform('导出翻译', () => rpc(backend.exportTranslation(appId)));
-  edit = (appId: string, apiName: string, name: string, description: string): Promise<unknown> => this.perform('保存编辑', () => rpc(backend.editTranslation(appId, apiName, name, description)), true);
-  checkUpdate = (): Promise<PluginUpdate> => this.perform('检查插件更新', () => rpc(backend.checkPluginUpdate()));
-  installUpdate = (): Promise<PluginUpdate> => this.perform('安装插件更新', () => rpc(backend.installPluginUpdate()));
+  refresh = (): Promise<CatalogSnapshot> => this.perform('refresh catalog', '刷新翻译库', () => rpc(backend.refreshCatalog()));
+  preview = (appId: string, variantId: string): Promise<TranslationDocument> => this.perform('preview translation', '下载预览', () => rpc(backend.previewTranslation(appId, variantId)));
+  install = (appId: string, variantId: string, language: string): Promise<unknown> => this.perform('apply translation', '应用翻译', () => rpc(backend.installTranslation(appId, variantId, language)), true);
+  toggle = (appId: string, enabled: boolean): Promise<unknown> => this.perform('toggle translation', enabled ? '启用翻译' : '恢复原文', () => rpc(backend.toggleTranslation(appId, enabled)), true);
+  restore = (appId: string): Promise<unknown> => this.perform('restore previous translation', '恢复上一版', () => rpc(backend.restoreTranslation(appId)), true);
+  configure = (settings: Partial<Settings>): Promise<unknown> => this.perform('save settings', '保存设置', () => rpc(backend.configure(JSON.stringify(settings))), true);
+  import = (text: string, language: string): Promise<unknown> => this.perform('import translation', '导入翻译', () => rpc(backend.importTranslation(text, language)), true);
+  export = (appId: string): Promise<TranslationDocument> => this.perform('export translation', '导出翻译', () => rpc(backend.exportTranslation(appId)));
+  edit = (appId: string, apiName: string, name: string, description: string): Promise<unknown> => this.perform('edit translation', '保存编辑', () => rpc(backend.editTranslation(appId, apiName, name, description)), true);
+  checkUpdate = (): Promise<PluginUpdate> => this.perform('check plugin update', '检查插件更新', () => rpc(backend.checkPluginUpdate()));
+  installUpdate = (): Promise<PluginUpdate> => this.perform('install plugin update', '安装插件更新', () => rpc(backend.installPluginUpdate()));
 
   private async synchronize(): Promise<void> {
     try { await this.refresh(); } catch { /* Cached translations remain usable. */ }
@@ -100,7 +100,7 @@ export class PluginRuntime {
       try {
         const update = await this.checkUpdate();
         if (update.available && !this.disposed) await this.installUpdate();
-      } catch { /* A missing initial release is visible in settings, without breaking translation. */ }
+      } catch { /* Update request failures remain visible without breaking translation. */ }
     }
   }
 }

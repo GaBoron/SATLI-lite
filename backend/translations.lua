@@ -1,4 +1,4 @@
-local json = require("cjson")
+local json = require("json_codec")
 local fs = require("fs")
 local storage = require("storage")
 local state = require("state")
@@ -33,7 +33,7 @@ local function activate(value, file, language, game, local_edits, enabled)
     assert(format.contains(value.languages, language), "此译本不包含所选语言")
     local next_state = storage.clone(state.get())
     local previous = next_state.apps[value.app_id]
-    local history = previous and previous.history or {}
+    local history = previous and previous.history or json.array()
     if previous then
         local previous_copy = storage.clone(previous)
         previous_copy.history = nil

@@ -1,4 +1,4 @@
-local json = require("cjson")
+local json = require("json_codec")
 local M = { MAX_BYTES = 32 * 1024 * 1024 }
 
 function M.app_id(value)

@@ -1,4 +1,4 @@
-local json = require("cjson")
+local json = require("json_codec")
 local fs = require("fs")
 local storage = require("storage")
 local network = require("network")
@@ -27,7 +27,13 @@ function M.status() return latest end
 
 function M.check()
     if latest.pending_restart then return latest end
-    local release = json.decode(network.get("https://api.github.com/repos/GaBoron/SATLI-lite/releases/latest", 1024 * 1024))
+    local text = network.get("https://api.github.com/repos/GaBoron/SATLI-lite/releases/latest", 1024 * 1024, true)
+    if not text then
+        candidate = nil
+        latest = { current_version = version, available = false }
+        return latest
+    end
+    local release = json.decode(text)
     assert(type(release) == "table" and not release.draft and not release.prerelease, "没有正式插件版本")
     local remote_version = tostring(release.tag_name):gsub("^v", "")
     semver(remote_version)

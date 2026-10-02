@@ -21,7 +21,7 @@ function M.commit(value)
 end
 
 function M.configure(text)
-    local json = require("cjson")
+    local json = require("json_codec")
     local changes = json.decode(text)
     assert(type(changes) == "table", "设置无效")
     local next_state = storage.clone(M.get())

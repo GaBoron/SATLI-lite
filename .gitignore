@@ -2,6 +2,7 @@ node_modules/
 .millennium/
 .codex/
 .generated/
+.millennium-build.toml
 backend/generated_version.lua
 dist/
 *.star

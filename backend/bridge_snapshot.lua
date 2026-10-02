@@ -1,4 +1,4 @@
-local json = require("cjson")
+local json = require("json_codec")
 local storage = require("storage")
 local format = require("translation_format")
 local M = {}
@@ -17,7 +17,7 @@ function M.build(current, document, reserve_capacity)
                 end
                 local achievements = {}
                 for api_name, achievement in pairs(value.achievements) do
-                    local sources = {}
+                    local sources = json.array()
                     for _, source in pairs((original.achievements[api_name] or achievement).translations) do table.insert(sources, source) end
                     for _, source in pairs(achievement.translations) do table.insert(sources, source) end
                     achievements[api_name] = { translations = { satli = achievement.translations[entry.language] }, sources = sources }

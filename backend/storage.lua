@@ -1,6 +1,6 @@
 local fs = require("fs")
 local millennium = require("millennium")
-local json = require("cjson")
+local json = require("json_codec")
 local M = {}
 local sequence = 0
 local root
