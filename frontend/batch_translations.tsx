@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { PluginRuntime } from './plugin_runtime';
 import { useRuntime } from './use_runtime';
 import { installedCatalogApps } from './steam_library';
-import { Button } from './ui_controls';
+import { SettingsSection } from './settings_layout';
+import { StatusMessage } from './status_message';
+import { Button, Icon } from './ui_controls';
 
 export function BatchTranslations({ runtime }: { runtime: PluginRuntime }) {
   const view = useRuntime(runtime);
@@ -41,25 +43,29 @@ export function BatchTranslations({ runtime }: { runtime: PluginRuntime }) {
     }
   };
 
-  return <section className="satli-settings-section satli-batch" aria-label="批量翻译">
-    <h3>批量翻译</h3>
-    <label className="satli-field"><span>游戏 App ID</span><input value={ids} onChange={event => setIds(event.target.value)} placeholder="例如 620 105600" disabled={running} /></label>
-    <p className="satli-muted">用空格或逗号分隔；批量下载使用默认译本和默认语言。</p>
-    <div className="satli-actions">
+  return <SettingsSection title="批量翻译" className="satli-batch">
+    <div className="satli-input-action">
+      <label className="satli-field"><span>游戏 App ID</span>
+        <input aria-describedby="satli-batch-help" value={ids} onChange={event => setIds(event.target.value)} placeholder="例如 620, 105600" disabled={running} />
+      </label>
+      <Button variant="filled" icon="download" disabled={view.busy || running || !ids.trim()} onClick={() => { void apply(false); }}>批量下载</Button>
+    </div>
+    <p id="satli-batch-help" className="satli-field-help">用空格或逗号分隔。下载使用默认译本和默认语言。</p>
+    <div className="satli-actions satli-batch-actions">
       <Button variant="outlined" icon="search" disabled={view.busy || running} onClick={() => {
         const apps = installedCatalogApps(Object.keys(view.catalog?.catalog.games ?? {}));
         if (!apps) { setProgress('暂时无法读取 Steam 游戏列表，请填写 App ID。'); return; }
         setIds(apps.join(' '));
         setProgress(`已找到 ${apps.length} 个收录且已安装的游戏`);
       }}>识别已安装游戏</Button>
-      <Button variant="tonal" icon="download" disabled={view.busy || running || !ids.trim()} onClick={() => { void apply(false); }}>批量下载</Button>
-      <Button variant="text" icon="refresh" disabled={view.busy || running} onClick={() => { void apply(true); }}>更新已下载译本</Button>
+      <Button variant="outlined" icon="refresh" disabled={view.busy || running} onClick={() => { void apply(true); }}>更新已下载译本</Button>
       {running && <Button variant="text" icon="close" onClick={() => {
         cancelled.current = true;
         setProgress('正在完成当前下载，后续任务已停止');
         console.debug('SATLI lite batch cancellation requested');
       }}>停止后续下载</Button>}
     </div>
-    {progress && <p className="satli-batch-progress" role="status">{progress}</p>}
-  </section>;
+    {progress && <StatusMessage message={progress} tone={running ? 'progress' : 'quiet'} busy={running}
+      icon={<Icon name={running ? 'spinner' : 'info'} className={running ? 'satli-spinning' : ''} />} />}
+  </SettingsSection>;
 }

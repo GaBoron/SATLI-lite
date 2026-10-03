@@ -1,5 +1,6 @@
 import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { ViewState } from '../shared/library_types';
+import { StatusMessage } from './status_message';
 
 const ICON_PATHS = {
   search: 'm21 21-4.4-4.4M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z',
@@ -13,8 +14,9 @@ const ICON_PATHS = {
   preview: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Zm13 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
   edit: 'm15 4 5 5M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15l-1 6Z',
   history: 'M3 11a9 9 0 1 1 2.5 7M3 4v7h7m2-4v5l3 2',
-  library: 'M4 4h4v16H4zm8 0h4v16h-4zm6 1 3-1 4 15-3 1Z',
+  library: 'M12 6c-3-2-6-2-9-1v15c3-1 6-1 9 1m0-15c3-2 6-2 9-1v15c-3-1-6-1-9 1',
   info: 'M12 11v6m0-10v.1M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z',
+  alert: 'M12 8v5m0 3v.1M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z',
   spinner: 'M21 12a9 9 0 1 1-9-9',
   link: 'M14 3h7v7m0-7L10 14M10 3H3v18h18v-7',
 } as const;
@@ -53,7 +55,7 @@ export function SwitchRow({ label, description, checked, disabled, onChange }: {
     <span className="satli-switch-copy"><span>{label}</span>{description && <small>{description}</small>}</span>
     <span className="satli-switch">
       <input type="checkbox" role="switch" checked={checked} disabled={disabled} onChange={event => onChange(event.target.checked)} />
-      <span className="satli-switch-track"><span className="satli-switch-thumb"><Icon name="check" /></span></span>
+      <span className="satli-switch-track"><span className="satli-switch-thumb" /></span>
     </span>
   </label>;
 }
@@ -63,9 +65,6 @@ export function Notice({ children, warning = false }: { children: ReactNode; war
 }
 
 export function RuntimeStatus({ view }: { view: ViewState }) {
-  if (!view.message) return null;
-  return <div className={`satli-status satli-status--${view.messageTone}`} role="status" aria-live="polite">
-    <Icon name={view.busy ? 'spinner' : view.messageTone === 'success' ? 'check' : 'info'} className={view.busy ? 'satli-spinning' : ''} />
-    <span>{view.message}</span>
-  </div>;
+  return <StatusMessage message={view.message} tone={view.messageTone} busy={view.busy}
+    icon={<Icon name={view.busy ? 'spinner' : view.messageTone === 'error' ? 'alert' : view.messageTone === 'success' ? 'check' : 'info'} className={view.busy ? 'satli-spinning' : ''} />} />;
 }
