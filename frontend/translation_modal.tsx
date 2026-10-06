@@ -1,8 +1,12 @@
-import { findSP, ModalRoot, showModal } from 'millennium';
+import { ModalRoot, showModal } from 'millennium';
 import { PluginRuntime } from './plugin_runtime';
 import { TranslationPanel } from './translation_panel';
 
 type ModalHandle = { Close: () => void; ClosedPromise?: Promise<void> };
+
+function screenExtent(available: number, full: number, minimum: number, fallback: number): number {
+  return [available, full].find(value => Number.isFinite(value) && value >= minimum) ?? fallback;
+}
 
 /** Adapt Steam's inline and popup dialogs to one owned, idempotent lifetime. */
 export function createTranslationModal(runtime: PluginRuntime) {
@@ -12,11 +16,14 @@ export function createTranslationModal(runtime: PluginRuntime) {
   const open = (appId?: string): void => {
     if (disposed) return;
     activeClose?.();
-    let parent: Window = window;
-    try { parent = findSP() || window; } catch { /* Use the current Steam context during startup. */ }
+    // The plugin's entry window owns Millennium's registered popup manager.
+    // findSP can return another render target whose modal overlay is not visible.
+    const parent = window;
     const screen = parent.screen;
-    const popupWidth = Math.max(1, Math.min(1120, (screen.availWidth || screen.width || 1200) - 48));
-    const popupHeight = Math.max(1, Math.min(780, (screen.availHeight || screen.height || 860) - 64));
+    // Millennium may expose a synthetic 1x1 Screen in the plugin context.
+    // Ignore invalid extents rather than shrinking a native popup to one pixel.
+    const popupWidth = Math.min(1120, screenExtent(screen.availWidth, screen.width, 320, 1168) - 48);
+    const popupHeight = Math.min(780, screenExtent(screen.availHeight, screen.height, 240, 844) - 64);
     let handle: ModalHandle | undefined;
     let released = false;
     let closeRequested = false;
@@ -24,7 +31,7 @@ export function createTranslationModal(runtime: PluginRuntime) {
       if (released) return;
       released = true;
       if (activeClose === close) activeClose = undefined;
-      console.debug('SATLI lite translation manager closed');
+      console.log('SATLI lite translation manager closed');
     };
     const close = (): boolean => {
       if (!released) {
@@ -48,9 +55,10 @@ export function createTranslationModal(runtime: PluginRuntime) {
       if (closeRequested) handle.Close();
       // Native handles expose this for inline dismissals too; the SDK type omits it.
       void handle.ClosedPromise?.then(release);
-      console.debug(`SATLI lite translation manager opened size=${popupWidth}x${popupHeight}`);
+      console.log(`SATLI lite translation manager opened host=entry size=${popupWidth}x${popupHeight}`);
     } catch (error) {
       release();
+      console.error('SATLI lite translation manager open failed', error instanceof Error ? error.message : 'Steam dialog unavailable');
       throw error;
     }
   };
