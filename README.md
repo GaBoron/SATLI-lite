@@ -10,7 +10,7 @@
 - **Millennium 3.5.0 或更高版本**。尚未安装时，请先按 [Millennium 官方安装指南](https://docs.steambrew.app/users/getting-started/installation) 安装，重新启动 Steam，确认左上角“Steam”菜单中出现“Millennium”入口。
 - 下载译本和插件更新时，需要能访问 GitHub；译本下载也可使用兼容的 HTTPS 镜像。已应用的本地译本可离线使用。
 
-**不需要安装 SATLI 本体，也不需要 Steam Web API 密钥、Node.js 或 Python。** 若已启用 SATLI 内置的成就显示插件或其他同类插件，请先停用，避免同时替换成就文字。
+若已启用 SATLI 内置的成就显示插件或其他同类插件，请先停用，避免同时替换成就文字。
 
 ## 安装
 
