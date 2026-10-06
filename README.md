@@ -1,56 +1,51 @@
 # SATLI lite
 
-[SATLI](https://github.com/GaBoron/SATLI) 的 Millennium 插件版，在 Steam 库存中获取和应用社区成就翻译。管理、预览和设置都在 Steam 内完成。
+[SATLI](https://github.com/GaBoron/SATLI) 的精简插件版，通过 Millennium 在 Steam 内下载、预览和应用社区成就翻译，无需打开独立程序。
 
-## 使用
+支持选择不同译本和语言、批量下载，以及本地编辑、导入导出和版本恢复。译本来自 [Steam 成就翻译库](https://github.com/GaBoron/steam-achievement-translation-library)。插件只替换成就的显示文字，不改变解锁状态、进度或图标。
 
-需要 Millennium 3.5.0 或更高版本。插件按官方 Starlight 结构开发，可手动安装，不依赖 Millennium 插件商店。
+## 前置要求
 
-1. 从本项目的构建产物或 [GitHub Releases](https://github.com/GaBoron/SATLI-lite/releases) 获取 `satli-lite.star`。
-2. 将文件放入 `<Millennium>/plugins/satli-lite.star`，在 Millennium 中启用 SATLI lite，然后重启 Steam。
-3. 打开库存游戏页，点击“成就翻译”；也可以从 Millennium 的 SATLI lite 设置页打开“管理译本”。
-4. 管理界面默认显示“我的库存”中已有译本的游戏，包含尚未安装的游戏。也可浏览全部社区译本或已下载的本地译本，选择译本与语言，预览后点击“下载并应用”。已下载的游戏可切换译本、停用翻译或恢复上一版。
+- 已安装并能正常运行的 **Steam 桌面客户端**。
+- **Millennium 3.5.0 或更高版本**。尚未安装时，请先按 [Millennium 官方安装指南](https://docs.steambrew.app/users/getting-started/installation) 安装，重新启动 Steam，确认左上角“Steam”菜单中出现“Millennium”入口。
+- 下载译本和插件更新时，需要能访问 GitHub；译本下载也可使用兼容的 HTTPS 镜像。已应用的本地译本可离线使用。
 
-库存按钮依赖 Steam 当前页面结构。按钮未出现时，可使用插件设置页入口；实际 Steam 中的按钮、成就通知、覆盖层及内嵌网页覆盖仍需验收。
+**不需要安装 SATLI 本体，也不需要 Steam Web API 密钥、Node.js 或 Python。** 若已启用 SATLI 内置的成就显示插件或其他同类插件，请先停用，避免同时替换成就文字。
 
-## 功能
+## 安装
 
-- 按游戏名或 App ID 搜索，筛选我的库存、已下载译本，或只看已安装的游戏。
-- 选择不同译本与语言，预览成就名称、描述和英文参考；展示贡献者和来源链接。
-- 识别库存中已被翻译库收录的游戏，包含未安装的游戏；批量下载默认语言译本，更新已下载译本，并支持停止后续下载。
-- 缓存译本供离线使用，启用或停用显示替换，恢复上一版。
-- 编辑单项成就，导入或导出翻译 JSON；本地编辑不会被自动译本更新覆盖。
-- 从本项目 GitHub 正式 Release 自动更新插件，保留旧包，重启 Steam 后生效。
-- 使用 GitHub 或自定义 HTTPS 翻译库镜像；网络代理沿用 Millennium 设置。
+以下步骤以 Windows 为例。SATLI lite 通过文件手动安装，无需在 Millennium 插件商店搜索。
 
-显示替换范围与 SATLI 内置 Millennium 插件一致：自己的成就、好友成就、游戏会话历史、应用详情、库存成就与活动缓存，以及桌面、游戏内和 Big Picture 成就通知。活动页与 Steam 内嵌网页还使用整页精确文本覆盖，不依赖成就区域的类名。插件的预览与编辑界面不参与替换。
+1. 打开 [最新版本下载页](https://github.com/GaBoron/SATLI-lite/releases/latest)，在 **Assets** 中下载 `satli-lite.star`。不要下载 `Source code`；`update.json` 供插件自动更新使用，无需手动安装。
+2. 从 Steam 左上角菜单选择“退出”，完全关闭 Steam；只关闭主窗口可能仍在后台运行。
+3. 找到包含 `steam.exe` 的 Steam 安装目录，将 `satli-lite.star` 放入其下的 `millennium\plugins` 文件夹，保持文件名不变。例如：
 
-它只替换显示文本，保留解锁状态、进度和图标。停用后，已呈现的部分成就卡片可能需要切换页面才能重新显示原文。
+   ```text
+   C:\Program Files (x86)\Steam\millennium\plugins\satli-lite.star
+   ```
 
-本插件使用翻译库自动生成的 JSON，不读写本机成就 BIN。完整 BIN/ZIP 制作与投稿仍可使用 SATLI 或 [Steam Achievement Localizer Skill](https://github.com/GaBoron/steam-achievement-localizer-skill)。
+   Steam 安装在其他位置时，请使用实际目录。插件不放在 `steamapps` 游戏目录中，也不需要解压 `.star` 文件。
+4. 启动 Steam，打开左上角 **Steam → Millennium → 插件（Plugins）**，启用 **SATLI lite**，再重启 Steam。
+5. 在 Millennium 中打开 **SATLI lite** 设置页。能看到“成就翻译”和“管理译本”入口，即可开始使用。
 
-## 数据源与更新
+找不到 Steam 安装目录或插件未显示时，参见 [安装与启动问题](docs/usage.md#安装与启动问题)。
 
-默认使用 [Steam 成就翻译库](https://github.com/GaBoron/steam-achievement-translation-library) 的 Catalog V2。每个版本需包含 `json` 元数据及 `UserGameStatsSchema_<app_id>.json` 配套文件。尚未发布 JSON 的数据源会显示提示，插件不会改用 BIN。
+## 首次使用
 
-自动检查在启动后及每六小时运行。社区译本自动更新默认关闭；插件自动更新默认开启，可在设置中更改。自更新只接受本项目的正式 GitHub Release，需要其提供本项目构建生成的 `update.json`。
+1. 在插件设置页点击“管理译本”；也可打开 Steam 库存中的游戏页面，点击“成就翻译”。
+2. 等待列表加载；列表为空时，点击右上角“刷新列表”。默认的“我的库存”只显示已有社区译本或本地译本的游戏，包含尚未安装的游戏。
+3. 选择游戏，再选择译本和语言。点击“预览译本”可先查看成就名称与描述。
+4. 点击“下载并应用”。完成后回到 Steam 游戏页面查看成就；页面已打开时，可切换到其他游戏再返回。
 
-## 构建
+已下载的游戏使用“应用所选译本”切换版本或语言。仅更改下拉框不会替换当前译本。
 
-使用 Node.js 20 或更高版本，在仓库根目录运行：
+## 文档与反馈
 
-```powershell
-npm ci
-npm run typecheck
-npm run build
-```
+- [使用指南](docs/usage.md)：译本管理、批量下载、编辑与备份、自动更新、网络设置和常见问题。
+- [插件问题反馈](https://github.com/GaBoron/SATLI-lite/issues/new)：安装、窗口或功能问题。
+- [译本问题与翻译请求](docs/usage.md#反馈与翻译请求)：翻译内容错误、过期译本或未收录的游戏。
+- [开发说明](docs/development.md)：源码构建、数据格式与模块说明。
 
-产物为 `dist/satli-lite.star` 和 `dist/update.json`。版本以 `millennium.toml` 为唯一来源。构建会生成前后端版本常量，并执行 Starlight 包校验。
+## 许可
 
-开发结构、数据保存位置、发布资产及验证边界见 [开发说明](docs/development.md)。
-
-## 隐私与许可
-
-本地设置、译本、编辑历史及旧插件包保存在 `<Millennium>/config/satli-lite/`。网络请求用于翻译库及插件更新；游戏列表在本机读取。日志交由 Millennium 管理，只记录工作流起止与错误，不记录成就文本、凭据或反馈内容。翻译请愿与报告入口只打开表单，由用户提交。
-
-代码采用 [MIT License](LICENSE)。显示覆盖模块改编自 SATLI；译本中的贡献者自有部分与第三方游戏内容遵循 [翻译库权利声明](https://github.com/GaBoron/steam-achievement-translation-library/blob/main/LICENSE.md)。
+插件代码采用 [MIT License](LICENSE)。译本中的贡献者内容与第三方游戏内容遵循 [翻译库权利声明](https://github.com/GaBoron/steam-achievement-translation-library/blob/main/LICENSE.md)。

@@ -1,5 +1,23 @@
 # 开发说明
 
+安装与日常操作见 [README](../README.md) 和 [使用指南](usage.md)。本文说明源码构建、模块与数据约定。
+
+## 源码构建
+
+需要 Node.js 20 或更高版本。在仓库根目录运行：
+
+```powershell
+npm ci
+npm run typecheck
+npm run build
+```
+
+产物为 `dist/satli-lite.star` 和 `dist/update.json`。版本以 `millennium.toml` 为唯一来源；类型生成与构建读取同一版本，并生成前后端版本常量。`npm run build` 执行发布打包和全部 STAR 章节校验。
+
+## 版本与兼容性
+
+公开版本使用三段式 `MAJOR.MINOR.PATCH`。兼容性边界包括 STAR 安装与升级方式、保存的设置、翻译 JSON 导入导出格式和自更新文件约定。`0.y.z` 阶段尚未承诺这些约定稳定；发生影响使用的变化时，应在对应版本发布说明中提供迁移方法。
+
 ## 模块
 
 遵循 [Millennium 官方插件配置](https://docs.steambrew.app/plugins/structure/config)，使用 Lua 后端、TypeScript/React 前端及 WebKit preload。`frontend/index.tsx` 和 `backend/main.lua` 只负责组装与生命周期。
@@ -80,7 +98,7 @@ Release 标签使用 `vMAJOR.MINOR.PATCH`，须与包内及清单版本一致。
 
 ## 检查与实际验收
 
-`npm run typecheck` 检查主前端与 WebKit 类型，`npm run build` 打包并校验全部 STAR 章节。临时模拟环境可以验证 JSON 接受与拒绝、下载与状态变更、编辑与恢复、DOM 文本与属性、API 数据字段保持、文件写入失败及自更新回滚。不要保留持久测试目录。
+`npm run typecheck` 检查主前端与 WebKit 类型，`npm run build` 打包并校验全部 STAR 章节。
 
 构建在 `.generated/backend/` 准备 Lua 源码，并生成忽略于 Git 的 `.millennium-build.toml`，只在字符串字面量中转义非 ASCII 字符。维护和类型生成仍使用 `backend/` 原始源码；打包后的中文提示保持 UTF-8。
 
