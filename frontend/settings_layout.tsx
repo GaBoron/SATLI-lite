@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { Icon } from './ui_controls';
 
 export function SettingsSection({ title, caption, children, className = '' }: {
   title: string; caption?: string; children: ReactNode; className?: string;
@@ -18,4 +19,17 @@ export function SettingRow({ label, description, controlId, children }: {
     </div>
     <div className="satli-setting-control">{children}</div>
   </div>;
+}
+
+export function SettingsDisclosure({ title, summary, children }: {
+  title: string; summary: string; children: ReactNode;
+}) {
+  return <details className="satli-settings-section satli-settings-disclosure" aria-label={title}>
+    <summary>
+      <span className="satli-disclosure-title">{title}</span>
+      <span className="satli-disclosure-context">{summary}</span>
+      <Icon name="chevron" />
+    </summary>
+    <div className="satli-section-content">{children}</div>
+  </details>;
 }

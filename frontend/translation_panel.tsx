@@ -5,6 +5,7 @@ import { GameBrowser } from './game_browser';
 import { TranslationDetails } from './translation_details';
 import { ImportTranslation } from './translation_files';
 import { Button, Icon, RuntimeStatus } from './ui_controls';
+import { PanelStylesheet } from './stylesheet';
 
 const ignoreError = (): void => undefined;
 
@@ -16,6 +17,7 @@ export function TranslationPanel({ runtime, initialAppId = '', onClose }: {
   const [importGeneration, setImportGeneration] = useState(0);
   const downloaded = Object.keys(view.state.apps).length;
   return <div data-satli-lite="panel" className="satli-lite-panel satli-workspace">
+    <PanelStylesheet />
     <header className="satli-workspace-header">
       <div className="satli-brand"><span className="satli-brand-mark" aria-hidden="true">译</span>
         <div><h1>SATLI <span>lite</span></h1><p>成就翻译{downloaded > 0 ? ` · 已下载 ${downloaded} 个游戏` : ''}</p></div>

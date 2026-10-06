@@ -35,7 +35,7 @@
   min-height: 36px; padding: 7px 13px; margin: 0; border: 1px solid var(--satli-outline);
   border-radius: 6px; background: var(--satli-container-high); background-image: none;
   color: var(--satli-text); font: inherit; font-size: 13px; font-weight: 500; line-height: 1.4;
-  box-shadow: none; cursor: pointer; text-align: center; flex-shrink: 0;
+  box-shadow: none; cursor: pointer; text-align: center; flex-shrink: 0; appearance: none;
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 .satli-button .satli-icon { width: 16px; height: 16px; }

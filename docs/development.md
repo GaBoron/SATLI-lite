@@ -17,6 +17,7 @@
 | `frontend/translation_panel.tsx`、`game_browser.tsx`、`translation_details.tsx` | 组装 Steam 内的游戏列表与译本详情，隔离选择和异步预览状态 |
 | `frontend/translation_choices.ts`、`translation_files.tsx` | 译本与语言选项、缺失选项回退、本地导入与导出 |
 | `frontend/ui_controls.tsx`、`styles.css`、`translation_workspace.css`、`translation_preview.css`、`settings.css` | 共用控件与 Steam 深色桌面样式，统一控件尺寸、操作层级和焦点反馈；尊重减少动画设置 |
+| `frontend/stylesheet.ts` | 主文档样式挂载及随设置页、管理面板渲染的样式组件，覆盖不同窗口和 portal |
 | `frontend/settings_content.tsx`、`settings_layout.tsx`、`settings_sections.tsx` | 组装设置页；分区标题与横向设置行；翻译、插件更新及镜像配置 |
 | `frontend/status_message.tsx` | 将可读操作消息与技术位置分开呈现，错误详情可展开 |
 | `frontend/translation_preview.tsx`、`batch_translations.tsx` | 成就对照与编辑、可停止的批量操作 |
@@ -36,9 +37,9 @@ JSON 模块采用 [Lunajson](https://github.com/grafi-tt/lunajson/tree/e3a9666eb
 
 显示入口及字段变换与 SATLI 的 `satli-display-bridge` 对齐：自己的成就、好友成就、会话历史、原生应用详情缓存、实时应用详情、加载后的 `achievements`/`achievementmap` 缓存、GameSessions 分组通知，以及 protobuf 成就通知记录补丁。DOM 回退与 SATLI 一样扫描整个文档的文本、`aria-label` 和 `title`，只接受精确匹配且无歧义的源字符串；仅跳过标记为 `data-satli-lite` 的插件界面，保留原文对照和用户编辑。结构化变换仅修改既有文本字段，不改变非文本字段。Steam 的缓存及通知接口可能随客户端更新变化。
 
-管理界面在 Steam 的模态窗口中使用列表与详情布局，不弹出独立窗口。译本选项包括 Catalog V2 中的所有版本和已安装的本地版本；各版本单独提供语言、说明、来源与更新状态。异步预览在游戏或译本切换后丢弃过期结果。界面共用搜索、按钮、开关及操作状态控件，样式由版本生成脚本合并到同一个包内字符串，不请求外部字体或 UI 库。
+管理界面在 Steam 的模态窗口中使用列表与详情布局，不弹出独立窗口。译本选项包括 Catalog V2 中的所有版本和已安装的本地版本；各版本单独提供语言、说明、来源与更新状态。异步预览在游戏或译本切换后丢弃过期结果。界面共用搜索、按钮、开关及操作状态控件，样式由版本生成脚本合并到同一个包内字符串，不请求外部字体或 UI 库。主文档挂载样式供库存按钮使用；设置页与管理面板还各自渲染 `PanelStylesheet`，让样式跟随实际所在的文档或 portal，并随组件卸载移除。
 
-设置页保留 Millennium 的标题与返回入口。仅在侧栏包含本插件设置时，通过作用域选择器扩展其宽度至最多 1000px，并为窄窗口保留边距；离开页面后恢复宿主宽度。页面采用分区标题与设置内容的横向布局，宽度不足时改为纵向排列。译本管理是顶部主入口，批量下载与 App ID 输入相邻；检查更新、镜像保存及批量辅助操作使用次级按钮，发布说明与反馈使用链接。错误显示可读说明，Lua 位置和多行技术信息默认折叠，不改变后端原始错误或操作流程。
+设置页保留 Millennium 的标题与返回入口。仅在侧栏包含本插件设置时，通过作用域选择器扩展其宽度至最多 1000px，并为窄窗口保留边距；离开页面后恢复宿主宽度。页面采用分区标题与设置内容的横向布局，宽度不足时改为纵向排列。译本管理是顶部主入口，下载与启用数量突出数字；窄窗口使用全宽管理按钮。翻译库来源默认折叠，摘要显示 GitHub 或自定义镜像，展开后编辑并保存。批量下载与 App ID 输入相邻；检查更新、镜像保存及批量辅助操作使用次级按钮，发布说明与反馈使用链接。错误显示可读说明，Lua 位置和多行技术信息默认折叠，不改变后端原始错误或操作流程。
 
 ## 本地保存
 
