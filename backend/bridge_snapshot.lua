@@ -13,6 +13,10 @@ function M.build(current, document, reserve_capacity)
                 if entry.original_file and entry.original_file ~= entry.file then
                     local original_entry = storage.clone(entry)
                     original_entry.file = entry.original_file
+                    -- The baseline can belong to a previously selected variant.
+                    -- Cache paths carry its own ID; imported edits validate the
+                    -- embedded ID and App ID without borrowing the active ID.
+                    original_entry.variant_id = entry.original_file:match("^translations/[1-9]%d*/([a-z0-9][a-z0-9%-]*)/")
                     original = document(original_entry)
                 end
                 local achievements = {}
