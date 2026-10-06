@@ -1,10 +1,4 @@
-.satli-lite-modal[class] {
-  width: min(1040px, 96vw); max-width: 96vw; min-width: 0; height: min(740px, 92vh);
-  min-height: 0; max-height: 96vh; padding: 0 !important; overflow: hidden;
-  border: 1px solid #303b48; border-radius: 10px; background: #171d25;
-  box-shadow: none; animation: satli-enter 150ms ease-out;
-}
-.satli-workspace { display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 0; container: satli-workspace / inline-size; background: var(--satli-surface); }
+.satli-workspace { display: flex; flex-direction: column; flex: 1; width: 100%; height: 100%; min-height: 0; container: satli-workspace / inline-size; background: var(--satli-surface); }
 .satli-workspace-header {
   display: flex; align-items: center; justify-content: space-between; gap: 16px; flex: none;
   min-height: 72px; padding: 14px 20px; border-bottom: 1px solid var(--satli-divider);
@@ -14,7 +8,7 @@
 .satli-workspace-title p { color: var(--satli-muted); font-size: 11px; margin-top: 4px; }
 .satli-lite-panel .satli-browser-back { display: none; }
 .satli-workspace-header > .satli-actions { gap: 4px; flex-wrap: nowrap; }
-.satli-workspace-content { display: grid; grid-template-columns: 276px minmax(0, 1fr); flex: 1; min-height: 0; overflow: hidden; }
+.satli-workspace-content { display: grid; grid-template-columns: 304px minmax(0, 1fr); flex: 1; min-height: 0; overflow: hidden; }
 .satli-detail { min-height: 0; min-width: 0; overflow-y: auto; padding: 24px 28px; scrollbar-gutter: stable; }
 .satli-detail-heading { margin-bottom: 20px; }
 .satli-lite-panel .satli-detail-heading h2 { margin: 6px 0 10px; font-size: 23px; line-height: 1.4; overflow-wrap: anywhere; }
@@ -69,6 +63,5 @@
   .satli-workspace-footer .satli-status { justify-self: start; }
 }
 @media (max-height: 560px) {
-  .satli-lite-modal[class] { height: 96vh; max-height: 96vh; }
   .satli-workspace-header { min-height: 60px; padding-top: 8px; padding-bottom: 8px; }
 }

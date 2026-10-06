@@ -106,6 +106,11 @@ export class PluginRuntime {
   }
 
   refresh = (): Promise<CatalogSnapshot> => this.perform('refresh catalog', '刷新翻译库', () => rpc(backend.refreshCatalog()));
+  refreshBrowser = (): Promise<CatalogSnapshot> => this.perform('refresh game list', '刷新列表', async () => {
+    try { await this.readInstalledGames(); } catch { /* Retain the cached installation list and its warning. */ }
+    this.refreshLibraryMembership();
+    return rpc(backend.refreshCatalog());
+  });
   scanLibrary = (): Promise<string[]> => this.perform('scan library games', '识别库存游戏', async () => {
     try { await this.readInstalledGames(); } catch { /* Steam library membership remains readable independently. */ }
     const apps = this.libraryApps(this.view);

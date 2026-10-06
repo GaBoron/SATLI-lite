@@ -28,19 +28,18 @@ export function TranslationPanel({ runtime, initialAppId = '', onClose }: {
         <div><h1>管理译本</h1><p>SATLI lite <span>· 已下载 {downloaded} · 已启用 {enabled}</span></p></div>
       </div>
       <div className="satli-actions">
-        <Button className="satli-catalog-refresh" variant="text" icon="refresh" title="刷新翻译库" aria-label="刷新翻译库" disabled={view.busy}
-          onClick={() => { void runtime.refresh().catch(ignoreError); }}><span>刷新翻译库</span></Button>
+        <Button className="satli-catalog-refresh" variant="text" icon="refresh" title="刷新翻译库与库存列表" aria-label="刷新翻译库与库存列表" disabled={view.busy}
+          onClick={() => { void runtime.refreshBrowser().catch(ignoreError); }}><span>刷新列表</span></Button>
         <Button variant="icon" icon="close" aria-label="关闭成就翻译" onClick={onClose} />
       </div>
     </header>
     <div className="satli-workspace-content">
-      <GameBrowser view={view} appId={appId} onSelect={selectGame} onRescan={() => { void runtime.scanLibrary().catch(ignoreError); }} />
+      <GameBrowser view={view} appId={appId} onSelect={selectGame} />
       {appId ? <TranslationDetails key={`${appId}:${importGeneration}`} appId={appId} runtime={runtime} view={view} />
         : <section className="satli-workspace-empty" aria-label="开始使用">
           <Icon name="library" />
           <h2>{view.catalog ? '选择一个游戏' : '浏览社区成就翻译'}</h2>
-          <p>{view.catalog ? '查看不同译本，选择语言并应用到 Steam。' : '刷新翻译库后即可选择游戏，已下载的译本可离线使用。'}</p>
-          {!view.catalog && <Button variant="filled" icon="refresh" disabled={view.busy} onClick={() => { void runtime.refresh().catch(ignoreError); }}>刷新翻译库</Button>}
+          <p>{view.catalog ? '查看不同译本，选择语言并应用到 Steam。' : '点击右上角“刷新列表”获取社区译本，已下载的译本可离线使用。'}</p>
         </section>}
     </div>
     <footer className={`satli-workspace-footer ${view.messageTone === 'error' ? 'has-error' : ''}`}>

@@ -1,6 +1,6 @@
 .satli-browser { display: flex; flex-direction: column; min-height: 0; min-width: 0; border-right: 1px solid var(--satli-divider); background: #1b222c; }
 .satli-browser-controls { flex: none; padding: 14px 12px 0; }
-.satli-browser-filters { display: flex; flex-wrap: wrap; gap: 0 14px; margin-top: 8px; border-bottom: 1px solid var(--satli-divider); }
+.satli-browser-filters { display: flex; flex-wrap: wrap; gap: 0 12px; margin-top: 8px; border-bottom: 1px solid var(--satli-divider); }
 .satli-lite-panel .satli-browser-filter {
   display: inline-flex; align-items: center; gap: 5px; min-height: 36px; margin: 0; padding: 6px 0;
   border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent;
@@ -12,10 +12,6 @@
 .satli-lite-panel .satli-browser-filter[aria-pressed="true"] { color: var(--satli-primary); border-bottom-color: var(--satli-primary); }
 .satli-browser-count { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; min-height: 36px; padding: 4px 0; color: var(--satli-muted); font-size: 11px; }
 .satli-browser-count > span { min-width: 0; }
-.satli-browser-count > span > span { opacity: .8; }
-.satli-browser-tools { display: flex; align-items: center; gap: 6px; flex: none; }
-.satli-browser-tools .satli-button--icon { width: 28px; min-height: 28px; }
-.satli-browser-tools .satli-icon { width: 14px; height: 14px; }
 .satli-lite-panel .satli-installed-filter { padding: 4px 0; border: 0; background: transparent; color: var(--satli-muted); font: inherit; font-size: 11px; cursor: pointer; appearance: none; }
 .satli-installed-filter::before { content: ''; display: inline-block; width: 5px; height: 5px; margin-right: 6px; border: 1px solid var(--satli-muted); border-radius: 50%; vertical-align: 1px; }
 .satli-lite-panel .satli-installed-filter[aria-pressed="true"] { color: var(--satli-primary); }

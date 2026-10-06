@@ -15,6 +15,7 @@
 | `scripts/lua_build.mjs` | 在生成目录准备 Lua 的 UTF-8 字节转义，避免 Starlight 压缩中文字符串时产生乱码 |
 | `frontend/plugin_runtime.ts` | 串行协调操作，发布 UI 状态，调度自动更新 |
 | `frontend/library_context.ts` | 识别当前库存页并注入管理入口 |
+| `frontend/translation_modal.tsx`、`translation_modal.css` | 适配 Steam 内嵌与弹出模态窗口的尺寸、边界和单实例生命周期；统一关闭回调 |
 | `frontend/steam_library.ts` | 读取社区 App ID 的 Steam 库存归属，筛选默认语言的批量下载目标 |
 | `frontend/translation_panel.tsx`、`game_browser.tsx`、`translation_details.tsx` | 组装 Steam 内的游戏列表与译本详情，隔离选择和异步预览状态 |
 | `frontend/translation_choices.ts`、`translation_files.tsx` | 译本与语言选项、缺失选项回退、本地导入与导出 |
@@ -39,9 +40,11 @@ JSON 模块采用 [Lunajson](https://github.com/grafi-tt/lunajson/tree/e3a9666eb
 
 显示入口及字段变换与 SATLI 的 `satli-display-bridge` 对齐：自己的成就、好友成就、会话历史、原生应用详情缓存、实时应用详情、加载后的 `achievements`/`achievementmap` 缓存、GameSessions 分组通知，以及 protobuf 成就通知记录补丁。DOM 回退与 SATLI 一样扫描整个文档的文本、`aria-label` 和 `title`，只接受精确匹配且无歧义的源字符串；仅跳过标记为 `data-satli-lite` 的插件界面，保留原文对照和用户编辑。结构化变换仅修改既有文本字段，不改变非文本字段。Steam 的缓存及通知接口可能随客户端更新变化。
 
-管理界面在 Steam 的模态窗口中显示，不弹出独立窗口。宽窗口使用游戏列表与详情两栏；窄窗口先显示完整列表，选择游戏后进入详情，返回时保留搜索、筛选与所选译本。标题、搜索、列表和底部操作占用固定的紧凑区域，剩余空间供当前列表或详情独立滚动。译本选项包括 Catalog V2 中的所有版本和已安装的本地版本；各版本单独提供语言、说明、来源与更新状态。异步预览在游戏或译本切换后丢弃过期结果。界面共用搜索、按钮、开关及操作状态控件，样式由版本生成脚本合并到同一个包内字符串，不请求外部字体或 UI 库。主文档挂载样式供库存按钮使用；设置页与管理面板还各自渲染 `PanelStylesheet`，让样式跟随实际所在的文档或 portal，并随组件卸载移除。
+管理界面使用 Steam 自身的模态窗口。目标尺寸为 1120×780；宿主采用弹出窗口时，显式传入按屏幕工作区缩减的尺寸，内容填满客户区域；内嵌窗口保留外侧关闭区域。宿主容器、内容及表单统一使用完整尺寸和 border-box，仅为本插件覆盖 Steam 默认内边距、内层宽度限制和顶部装饰条。弹出窗口可拖动管理界面的标题区域。关闭按钮、Esc、点击空白及宿主关闭都释放同一个会话，关闭可重复调用；不传入会被 Steam 在关闭通知中再次调用的原始 `closeModal`。卸载插件时关闭当前会话。
 
-“我的库存”读取 Steam `appStore.GetAppOverviewByAppID()` 的 `visible_in_game_list` 标记，与 Steam 的库存列表归属一致，包含未安装的游戏。插件全局中没有 `appStore` 时，通过 Millennium 的 `findModuleExport()` 取得同一个库存数据源。默认只列出翻译库已收录或已有本地译本的库存游戏；未收录的其他应用不会加入列表。“全部”仍可浏览社区翻译库。“只看已安装”独立使用 `millennium.steam_path()`、`steamapps/libraryfolders.vdf` 和各库中的 `appmanifest_*.acf`，支持多个库目录，避免依赖当前窗口缓存是否已加载安装状态。清单解析只处理文本 KeyValues，不读取成就 BIN，也不修改 Steam 文件。目录或清单未能读取时报告列表可能不完整。
+宽窗口使用游戏列表与详情两栏；窄窗口先显示完整列表，选择游戏后进入详情，返回时保留搜索、筛选与所选译本。标题、搜索、列表和底部操作占用固定的紧凑区域，剩余空间供当前列表或详情独立滚动。社区译本、我的库存与已下载为互斥的列表范围，已安装筛选独立生效。顶部“刷新列表”是统一刷新入口，重新读取安装清单、库存归属与社区索引；网络失败不妨碍先更新本机清单，索引错误仍显示在底部状态中。译本选项包括 Catalog V2 中的所有版本和已安装的本地版本；各版本单独提供语言、说明、来源与更新状态。异步预览在游戏或译本切换后丢弃过期结果。界面共用搜索、按钮、开关及操作状态控件，样式由版本生成脚本合并到同一个包内字符串，不请求外部字体或 UI 库。主文档挂载样式供库存按钮使用；设置页与管理面板还各自渲染 `PanelStylesheet`，让样式跟随实际所在的文档或 portal，并随组件卸载移除。
+
+“我的库存”读取 Steam `appStore.GetAppOverviewByAppID()` 的 `visible_in_game_list` 标记，与 Steam 的库存列表归属一致，包含未安装的游戏。插件全局中没有 `appStore` 时，通过 Millennium 的 `findModuleExport()` 取得同一个库存数据源。默认只列出翻译库已收录或已有本地译本的库存游戏；未收录的其他应用不会加入列表。“社区译本”仍可浏览社区翻译库。“只看已安装”独立使用 `millennium.steam_path()`、`steamapps/libraryfolders.vdf` 和各库中的 `appmanifest_*.acf`，支持多个库目录，避免依赖当前窗口缓存是否已加载安装状态。清单解析只处理文本 KeyValues，不读取成就 BIN，也不修改 Steam 文件。目录或清单未能读取时报告列表可能不完整。
 
 “识别库存游戏”以库存归属与翻译库的交集为目标，批量输入只填入提供 JSON 且支持默认语言的默认译本；结果分别显示收录数和可下载数。库存归属读取失败时提示重试，不将未收录的本机应用加入批量任务。库存归属在打开管理界面、识别库存及成功完成操作时重新读取，不新增持续轮询。
 
