@@ -1,5 +1,7 @@
 import { CatalogSnapshot, PluginUpdate, Settings, TranslationDocument, ViewState, unwrapFfi } from '../shared/library_types';
 import { PLUGIN_VERSION } from '../.generated/version';
+import { SteamLibrarySnapshot } from '../shared/steam_library_types';
+import { catalogLibraryApps } from './steam_library';
 
 type BackendSnapshot = Pick<ViewState, 'state' | 'catalog' | 'update'>;
 
@@ -34,10 +36,38 @@ export class PluginRuntime {
   }
 
   async initialize(): Promise<void> {
-    try { this.publish(await rpc<BackendSnapshot>(backend.getState())); }
+    try {
+      const snapshot = await rpc<BackendSnapshot>(backend.getState());
+      this.publish({ ...snapshot, libraryAppIds: this.libraryApps(snapshot) });
+    }
     catch (error) {
       this.publish({ message: error instanceof Error ? error.message : '读取本地数据失败', messageTone: 'error' });
       console.warn('SATLI lite read state failed');
+    }
+    try { await this.readInstalledGames(); } catch { /* The browser can retry without hiding cached translations. */ }
+    this.refreshLibraryMembership();
+  }
+
+  private libraryApps(snapshot: BackendSnapshot): string[] | undefined {
+    return catalogLibraryApps([...new Set([...Object.keys(snapshot.catalog?.catalog.games ?? {}), ...Object.keys(snapshot.state.apps)])]);
+  }
+
+  refreshLibraryMembership(): void {
+    const apps = this.libraryApps(this.view);
+    this.publish({ libraryAppIds: apps });
+    if (apps) console.log(`SATLI lite library membership complete collected=${apps.length}`);
+    else console.warn('SATLI lite Steam library membership unavailable');
+  }
+
+  private async readInstalledGames(): Promise<SteamLibrarySnapshot> {
+    try {
+      const inventory = await rpc<SteamLibrarySnapshot>(backend.getInstalledGames());
+      this.publish({ steamLibrary: inventory, steamLibraryError: undefined });
+      return inventory;
+    } catch (error) {
+      this.publish({ steamLibraryError: error instanceof Error ? error.message : '读取已安装游戏失败' });
+      console.warn('SATLI lite scan installed games failed');
+      throw error;
     }
   }
 
@@ -60,7 +90,7 @@ export class PluginRuntime {
       try {
         const result = await operation();
         const snapshot = await rpc<BackendSnapshot>(backend.getState());
-        this.publish({ ...snapshot, message: `${label}完成`, messageTone: 'success' });
+        this.publish({ ...snapshot, libraryAppIds: this.libraryApps(snapshot), message: `${label}完成`, messageTone: 'success' });
         if (applied) await this.onApplied?.();
         return result;
       } catch (error) {
@@ -76,6 +106,14 @@ export class PluginRuntime {
   }
 
   refresh = (): Promise<CatalogSnapshot> => this.perform('refresh catalog', '刷新翻译库', () => rpc(backend.refreshCatalog()));
+  scanLibrary = (): Promise<string[]> => this.perform('scan library games', '识别库存游戏', async () => {
+    try { await this.readInstalledGames(); } catch { /* Steam library membership remains readable independently. */ }
+    const apps = this.libraryApps(this.view);
+    if (!apps) throw new Error('暂时无法读取 Steam 库存，请打开库存页后重试。');
+    this.publish({ libraryAppIds: apps });
+    console.debug(`SATLI lite scan library complete collected=${apps.length}`);
+    return apps;
+  });
   preview = (appId: string, variantId: string): Promise<TranslationDocument> => this.perform('preview translation', '下载预览', () => rpc(backend.previewTranslation(appId, variantId)));
   install = (appId: string, variantId: string, language: string): Promise<unknown> => this.perform('apply translation', '应用翻译', () => rpc(backend.installTranslation(appId, variantId, language)), true);
   toggle = (appId: string, enabled: boolean): Promise<unknown> => this.perform('toggle translation', enabled ? '启用翻译' : '恢复原文', () => rpc(backend.toggleTranslation(appId, enabled)), true);

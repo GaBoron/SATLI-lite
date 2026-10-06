@@ -10,13 +10,15 @@
 | `backend/translations.lua`、`state.lua`、`storage.lua` | 管理启用状态、缓存、本地编辑和历史恢复；写入前验证并备份 |
 | `backend/bridge_snapshot.lua` | 将已启用译本投影为显示覆盖快照，并在提交前检查总量 |
 | `backend/json_codec.lua`、`vendor/lunajson/` | 随包提供纯 Lua JSON 编解码，保留空数组、空对象和 null；数组长度随编辑变化 |
+| `backend/steam_library.lua`、`steam_vdf.lua`、`shared/steam_library_types.ts` | 只读扫描各 Steam 库的安装清单，解析文本 KeyValues，报告未读目录与清单；共享安装状态结构 |
 | `backend/updater.lua`、`update_package.lua` | 限定 GitHub 发布来源，验证 STAR 章节与 MessagePack 元数据，备份旧包并替换 |
 | `scripts/lua_build.mjs` | 在生成目录准备 Lua 的 UTF-8 字节转义，避免 Starlight 压缩中文字符串时产生乱码 |
 | `frontend/plugin_runtime.ts` | 串行协调操作，发布 UI 状态，调度自动更新 |
-| `frontend/library_context.ts`、`steam_library.ts` | 识别当前库存页，注入按钮，读取已安装游戏 |
+| `frontend/library_context.ts` | 识别当前库存页并注入管理入口 |
+| `frontend/steam_library.ts` | 读取社区 App ID 的 Steam 库存归属，筛选默认语言的批量下载目标 |
 | `frontend/translation_panel.tsx`、`game_browser.tsx`、`translation_details.tsx` | 组装 Steam 内的游戏列表与译本详情，隔离选择和异步预览状态 |
 | `frontend/translation_choices.ts`、`translation_files.tsx` | 译本与语言选项、缺失选项回退、本地导入与导出 |
-| `frontend/ui_controls.tsx`、`styles.css`、`translation_workspace.css`、`translation_preview.css`、`settings.css` | 共用控件与 Steam 深色桌面样式，统一控件尺寸、操作层级和焦点反馈；尊重减少动画设置 |
+| `frontend/ui_controls.tsx`、`styles.css`、`game_browser.css`、`translation_workspace.css`、`translation_preview.css`、`settings.css` | 共用控件与 Steam 深色桌面样式；游戏列表样式与工作区布局分离，统一控件尺寸、操作层级和焦点反馈；尊重减少动画设置 |
 | `frontend/stylesheet.ts` | 主文档样式挂载及随设置页、管理面板渲染的样式组件，覆盖不同窗口和 portal |
 | `frontend/settings_content.tsx`、`settings_layout.tsx`、`settings_sections.tsx` | 组装设置页；分区标题与横向设置行；翻译、插件更新及镜像配置 |
 | `frontend/status_message.tsx` | 将可读操作消息与技术位置分开呈现，错误详情可展开 |
@@ -37,7 +39,11 @@ JSON 模块采用 [Lunajson](https://github.com/grafi-tt/lunajson/tree/e3a9666eb
 
 显示入口及字段变换与 SATLI 的 `satli-display-bridge` 对齐：自己的成就、好友成就、会话历史、原生应用详情缓存、实时应用详情、加载后的 `achievements`/`achievementmap` 缓存、GameSessions 分组通知，以及 protobuf 成就通知记录补丁。DOM 回退与 SATLI 一样扫描整个文档的文本、`aria-label` 和 `title`，只接受精确匹配且无歧义的源字符串；仅跳过标记为 `data-satli-lite` 的插件界面，保留原文对照和用户编辑。结构化变换仅修改既有文本字段，不改变非文本字段。Steam 的缓存及通知接口可能随客户端更新变化。
 
-管理界面在 Steam 的模态窗口中使用列表与详情布局，不弹出独立窗口。译本选项包括 Catalog V2 中的所有版本和已安装的本地版本；各版本单独提供语言、说明、来源与更新状态。异步预览在游戏或译本切换后丢弃过期结果。界面共用搜索、按钮、开关及操作状态控件，样式由版本生成脚本合并到同一个包内字符串，不请求外部字体或 UI 库。主文档挂载样式供库存按钮使用；设置页与管理面板还各自渲染 `PanelStylesheet`，让样式跟随实际所在的文档或 portal，并随组件卸载移除。
+管理界面在 Steam 的模态窗口中显示，不弹出独立窗口。宽窗口使用游戏列表与详情两栏；窄窗口先显示完整列表，选择游戏后进入详情，返回时保留搜索、筛选与所选译本。标题、搜索、列表和底部操作占用固定的紧凑区域，剩余空间供当前列表或详情独立滚动。译本选项包括 Catalog V2 中的所有版本和已安装的本地版本；各版本单独提供语言、说明、来源与更新状态。异步预览在游戏或译本切换后丢弃过期结果。界面共用搜索、按钮、开关及操作状态控件，样式由版本生成脚本合并到同一个包内字符串，不请求外部字体或 UI 库。主文档挂载样式供库存按钮使用；设置页与管理面板还各自渲染 `PanelStylesheet`，让样式跟随实际所在的文档或 portal，并随组件卸载移除。
+
+“我的库存”读取 Steam `appStore.GetAppOverviewByAppID()` 的 `visible_in_game_list` 标记，与 Steam 的库存列表归属一致，包含未安装的游戏。插件全局中没有 `appStore` 时，通过 Millennium 的 `findModuleExport()` 取得同一个库存数据源。默认只列出翻译库已收录或已有本地译本的库存游戏；未收录的其他应用不会加入列表。“全部”仍可浏览社区翻译库。“只看已安装”独立使用 `millennium.steam_path()`、`steamapps/libraryfolders.vdf` 和各库中的 `appmanifest_*.acf`，支持多个库目录，避免依赖当前窗口缓存是否已加载安装状态。清单解析只处理文本 KeyValues，不读取成就 BIN，也不修改 Steam 文件。目录或清单未能读取时报告列表可能不完整。
+
+“识别库存游戏”以库存归属与翻译库的交集为目标，批量输入只填入提供 JSON 且支持默认语言的默认译本；结果分别显示收录数和可下载数。库存归属读取失败时提示重试，不将未收录的本机应用加入批量任务。库存归属在打开管理界面、识别库存及成功完成操作时重新读取，不新增持续轮询。
 
 设置页保留 Millennium 的标题与返回入口。仅在侧栏包含本插件设置时，通过作用域选择器扩展其宽度至最多 1000px，并为窄窗口保留边距；离开页面后恢复宿主宽度。页面采用分区标题与设置内容的横向布局，宽度不足时改为纵向排列。译本管理是顶部主入口，下载与启用数量突出数字；窄窗口使用全宽管理按钮。翻译库来源默认折叠，摘要显示 GitHub 或自定义镜像，展开后编辑并保存。批量下载与 App ID 输入相邻；检查更新、镜像保存及批量辅助操作使用次级按钮，发布说明与反馈使用链接。错误显示可读说明，Lua 位置和多行技术信息默认折叠，不改变后端原始错误或操作流程。
 

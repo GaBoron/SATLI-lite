@@ -1,3 +1,5 @@
+import { SteamLibrarySnapshot } from './steam_library_types';
+
 export interface TranslationText { name: string; description: string }
 export interface TranslationDocument {
   version: 1;
@@ -60,6 +62,9 @@ export interface PluginState {
 export interface ViewState {
   state: PluginState;
   catalog?: CatalogSnapshot;
+  steamLibrary?: SteamLibrarySnapshot;
+  steamLibraryError?: string;
+  libraryAppIds?: string[];
   update: PluginUpdate;
   busy: boolean;
   message: string;

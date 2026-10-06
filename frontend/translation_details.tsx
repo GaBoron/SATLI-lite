@@ -11,6 +11,7 @@ const ignoreError = (): void => undefined;
 export function TranslationDetails({ appId, runtime, view }: { appId: string; runtime: PluginRuntime; view: ViewState }) {
   const game = view.catalog?.catalog.games[appId];
   const installed = view.state.apps[appId];
+  const localGame = view.steamLibrary?.apps.find(app => app.app_id === appId);
   const [variantId, setVariantId] = useState(installed?.variant_id || 'default');
   const [language, setLanguage] = useState(installed?.language || view.state.settings.language);
   const [preview, setPreview] = useState<TranslationDocument>();
@@ -68,9 +69,10 @@ export function TranslationDetails({ appId, runtime, view }: { appId: string; ru
   return <section className="satli-detail" aria-label="译本详情">
     <div className="satli-detail-heading">
       <span className="satli-eyebrow">App {appId}</span>
-      <h2>{game?.name || installed?.name || `App ${appId}`}</h2>
+      <h2>{game?.name || installed?.name || localGame?.name || `App ${appId}`}</h2>
       <div className="satli-detail-meta">
-        <span>{variant?.achievements ?? (shownPreview ? Object.keys(shownPreview.achievements).length : 0)} 项成就</span>
+        {(variant || shownPreview) && <span>{variant?.achievements ?? (shownPreview ? Object.keys(shownPreview.achievements).length : 0)} 项成就</span>}
+        {localGame && <span>本机已安装</span>}
         {game?.updated_at && <span>更新于 {game.updated_at.slice(0, 10)}</span>}
         {hasUpdate && <span className="satli-badge">译本有更新</span>}
       </div>

@@ -4,6 +4,7 @@ local state = require("state")
 local catalog = require("catalog")
 local translations = require("translations")
 local updater = require("updater")
+local steam_library = require("steam_library")
 
 local function response(workflow, operation)
     logger:info(workflow .. " start")
@@ -21,6 +22,12 @@ end
 ---@return string
 function getState()
     return response("read state", function() return { state = state.get(), catalog = catalog.get(), update = updater.status() } end)
+end
+
+---@ffi
+---@return string
+function getInstalledGames()
+    return response("scan installed games", steam_library.scan)
 end
 
 ---@ffi

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { PluginRuntime } from './plugin_runtime';
 import { useRuntime } from './use_runtime';
-import { installedCatalogApps } from './steam_library';
+import { catalogTranslationApps } from './steam_library';
+import { LANGUAGE_NAMES } from '../shared/library_types';
 import { SettingsSection } from './settings_layout';
 import { StatusMessage } from './status_message';
 import { Button, Icon } from './ui_controls';
@@ -9,11 +10,32 @@ import { Button, Icon } from './ui_controls';
 export function BatchTranslations({ runtime }: { runtime: PluginRuntime }) {
   const view = useRuntime(runtime);
   const [running, setRunning] = useState(false);
+  const [detecting, setDetecting] = useState(false);
   const [progress, setProgress] = useState('');
   const [ids, setIds] = useState('');
   const cancelled = useRef(false);
   const mounted = useRef(true);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; cancelled.current = true; }; }, []);
+
+  const detectLibrary = async (): Promise<void> => {
+    setDetecting(true);
+    setProgress('正在识别 Steam 库存游戏…');
+    try {
+      const apps = await runtime.scanLibrary();
+      if (!mounted.current) return;
+      const snapshot = runtime.snapshot();
+      const targets = catalogTranslationApps(apps, snapshot.catalog, snapshot.state.settings.language);
+      setIds(targets.appIds.join(' '));
+      const available = snapshot.catalog
+        ? `${targets.collected} 个已收录 · ${targets.appIds.length} 个可下载（${LANGUAGE_NAMES[snapshot.state.settings.language] || snapshot.state.settings.language}）`
+        : '请先刷新翻译库以查找可下载的译本';
+      setProgress(`库存游戏 · ${available}（包含未安装的游戏）`);
+    } catch {
+      if (mounted.current) setProgress('无法读取库存游戏，请查看操作提示，或填写 App ID。');
+    } finally {
+      if (mounted.current) setDetecting(false);
+    }
+  };
 
   const apply = async (updateOnly: boolean): Promise<void> => {
     cancelled.current = false;
@@ -46,26 +68,21 @@ export function BatchTranslations({ runtime }: { runtime: PluginRuntime }) {
   return <SettingsSection title="批量翻译" className="satli-batch">
     <div className="satli-input-action">
       <label className="satli-field"><span>游戏 App ID</span>
-        <input aria-describedby="satli-batch-help" value={ids} onChange={event => setIds(event.target.value)} placeholder="例如 620, 105600" disabled={running} />
+        <input aria-describedby="satli-batch-help" value={ids} onChange={event => setIds(event.target.value)} placeholder="例如 620, 105600" disabled={running || detecting} />
       </label>
-      <Button variant="filled" icon="download" disabled={view.busy || running || !ids.trim()} onClick={() => { void apply(false); }}>批量下载</Button>
+      <Button variant="filled" icon="download" disabled={view.busy || running || detecting || !ids.trim()} onClick={() => { void apply(false); }}>批量下载</Button>
     </div>
     <p id="satli-batch-help" className="satli-field-help">用空格或逗号分隔。下载使用默认译本和默认语言。</p>
     <div className="satli-actions satli-batch-actions">
-      <Button variant="outlined" icon="search" disabled={view.busy || running} onClick={() => {
-        const apps = installedCatalogApps(Object.keys(view.catalog?.catalog.games ?? {}));
-        if (!apps) { setProgress('暂时无法读取 Steam 游戏列表，请填写 App ID。'); return; }
-        setIds(apps.join(' '));
-        setProgress(`已找到 ${apps.length} 个收录且已安装的游戏`);
-      }}>识别已安装游戏</Button>
-      <Button variant="outlined" icon="refresh" disabled={view.busy || running} onClick={() => { void apply(true); }}>更新已下载译本</Button>
+      <Button variant="outlined" icon="search" disabled={view.busy || running || detecting} onClick={() => { void detectLibrary(); }}>识别库存游戏</Button>
+      <Button variant="outlined" icon="refresh" disabled={view.busy || running || detecting} onClick={() => { void apply(true); }}>更新已下载译本</Button>
       {running && <Button variant="text" icon="close" onClick={() => {
         cancelled.current = true;
         setProgress('正在完成当前下载，后续任务已停止');
         console.debug('SATLI lite batch cancellation requested');
       }}>停止后续下载</Button>}
     </div>
-    {progress && <StatusMessage message={progress} tone={running ? 'progress' : 'quiet'} busy={running}
-      icon={<Icon name={running ? 'spinner' : 'info'} className={running ? 'satli-spinning' : ''} />} />}
+    {progress && <StatusMessage message={progress} tone={running || detecting ? 'progress' : 'quiet'} busy={running || detecting}
+      icon={<Icon name={running || detecting ? 'spinner' : 'info'} className={running || detecting ? 'satli-spinning' : ''} />} />}
   </SettingsSection>;
 }
