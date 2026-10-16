@@ -3,6 +3,7 @@ local fs = require("fs")
 local storage = require("storage")
 local network = require("network")
 local package_format = require("update_package")
+local logger = require("logger")
 local version = require("generated_version")
 local M = {}
 local id = "com.gaboron.satli-lite"
@@ -23,13 +24,29 @@ local function newer(first, second)
     return false
 end
 
+local function read_manifest(text, expected_version)
+    local manifest = json.decode(text)
+    assert(type(manifest) == "table" and manifest.format == 1 and manifest.id == id and manifest.asset == "satli-lite.star", "插件更新清单不匹配")
+    semver(manifest.version)
+    assert(not expected_version or manifest.version == expected_version, "插件更新清单不匹配")
+    assert(type(manifest.size) == "number" and manifest.size > 0 and manifest.size <= 16 * 1024 * 1024 and manifest.size % 1 == 0, "更新包大小无效")
+    return manifest
+end
+
 function M.status() return latest end
 
 function M.check()
     if latest.pending_restart then return latest end
-    local text = network.get("https://api.github.com/repos/GaBoron/SATLI-lite/releases/latest", 1024 * 1024, true)
+    candidate = nil
+    local success, text = pcall(network.get, "https://api.github.com/repos/GaBoron/SATLI-lite/releases/latest", 1024 * 1024, true)
+    if not success then
+        logger:warn("GitHub Release API unavailable; checking published update.json")
+        local manifest = read_manifest(network.get(releases .. "latest/download/update.json", 24 * 1024 * 1024))
+        latest = { current_version = version, latest_version = manifest.version, available = newer(manifest.version, version), release_url = releases .. "tag/v" .. manifest.version }
+        if latest.available then candidate = { version = manifest.version, manifest = manifest } end
+        return latest
+    end
     if not text then
-        candidate = nil
         latest = { current_version = version, available = false }
         return latest
     end
@@ -38,7 +55,6 @@ function M.check()
     local remote_version = tostring(release.tag_name):gsub("^v", "")
     semver(remote_version)
     assert(type(release.html_url) == "string" and release.html_url:sub(1, #releases) == releases, "发布来源无效")
-    candidate = nil
     latest = { current_version = version, latest_version = remote_version, available = newer(remote_version, version), release_url = release.html_url }
     if not latest.available then return latest end
     for _, asset in ipairs(release.assets or {}) do
@@ -56,9 +72,7 @@ function M.install()
     assert(not latest.pending_restart, "更新已准备，请重启 Steam")
     if not candidate then M.check() end
     assert(candidate and latest.available, "没有可安装的插件更新")
-    local manifest = json.decode(network.get(candidate.url, 24 * 1024 * 1024))
-    assert(manifest.format == 1 and manifest.id == id and manifest.version == candidate.version and manifest.asset == "satli-lite.star", "插件更新清单不匹配")
-    assert(type(manifest.size) == "number" and manifest.size > 0 and manifest.size <= 16 * 1024 * 1024 and manifest.size % 1 == 0, "更新包大小无效")
+    local manifest = candidate.manifest or read_manifest(network.get(candidate.url, 24 * 1024 * 1024), candidate.version)
     local bytes = package_format.decode_base64(manifest.package_base64)
     assert(#bytes == manifest.size, "更新包下载不完整")
     local metadata = package_format.metadata(bytes)

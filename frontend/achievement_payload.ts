@@ -33,6 +33,24 @@ export function translateAchievementResponse(
   };
 }
 
+export function translateAchievementSchema(
+  translator: AchievementTranslator,
+  schema: any,
+): any {
+  if (!schema || !/^\d+$/.test(String(schema.appid)) || !Array.isArray(schema.groups)) {
+    return schema;
+  }
+  let changed = false;
+  const groups = schema.groups.map((group: any) => {
+    if (!Array.isArray(group?.achievements)) return group;
+    const achievements = translateAchievementCollection(translator, schema.appid, group.achievements);
+    if (achievements === group.achievements) return group;
+    changed = true;
+    return { ...group, achievements };
+  });
+  return changed ? { ...schema, groups } : schema;
+}
+
 export function translateAchievementGroups(
   translator: AchievementTranslator,
   appId: string | number,

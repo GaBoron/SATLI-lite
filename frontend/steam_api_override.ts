@@ -1,4 +1,5 @@
 import { DisplayOverrideController } from '../shared/display_override';
+import { installAchievementSchemaCache } from './steam_achievement_schema';
 import {
   translateCachedAppDetails,
   translateLoadedAppDetailsCache,
@@ -19,6 +20,7 @@ export function installSteamApiOverrides(
   const cleanups: Array<() => void> = [];
   const activePaths: string[] = [];
   const apps = SteamClient.Apps as unknown as MutableApi;
+  cleanups.push(installAchievementSchemaCache(controller));
 
   if (wrapPromiseResult(apps, 'GetMyAchievementsForApp', cleanups, (args, result) =>
     translateAchievementResponse(controller, args[0], result))) {

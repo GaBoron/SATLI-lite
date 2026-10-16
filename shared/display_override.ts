@@ -46,6 +46,7 @@ export class DisplayOverrideController {
   private appliedText = new Map<Text, AppliedValue>();
   private appliedAttributes = new Map<Element, Map<string, AppliedValue>>();
   private translatedAchievements = new Set<string>();
+  private translationListeners = new Set<() => void>();
   private lastPayload = '';
   private lastError = '';
   private metricAppCount = 0;
@@ -101,10 +102,16 @@ export class DisplayOverrideController {
     this.replacements.clear();
     this.targets.clear();
     this.restoreAppliedValues();
+    this.translationListeners.clear();
   }
 
   async refreshNow(): Promise<void> {
     await this.refresh();
+  }
+
+  subscribeTranslations(listener: () => void): () => void {
+    this.translationListeners.add(listener);
+    return () => { this.translationListeners.delete(listener); };
   }
 
   translateAchievement<T>(appId: string | number, value: T, apiNameHint?: string): T {
@@ -160,6 +167,7 @@ export class DisplayOverrideController {
       this.replacements = buildReplacementMap(snapshot, language);
       this.targets = buildAchievementTargets(snapshot, language);
       this.applyToNode(this.root);
+      for (const listener of this.translationListeners) listener();
       this.publishMetrics(snapshot);
     } catch (error) {
       const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
