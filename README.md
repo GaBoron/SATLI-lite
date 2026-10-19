@@ -7,7 +7,7 @@
 ## 前置要求
 
 - 已安装并能正常运行的 **Steam 桌面客户端**。
-- **Millennium 3.5.0 或更高版本**。尚未安装时，请先按 [Millennium 官方安装指南](https://docs.steambrew.app/users/getting-started/installation) 安装，重新启动 Steam，确认左上角“Steam”菜单中出现“Millennium”入口。
+- **Millennium 3.5.0 或更高版本**。尚未安装时，先前往 [Millennium 官方项目](https://github.com/SteamClientHomebrew/Millennium)，按照 [官方安装指南](https://docs.steambrew.app/users/getting-started/installation) 安装。完成后重新启动 Steam，确认左上角“Steam”菜单中出现“Millennium”入口。
 - 下载译本和插件更新时，需要能访问 GitHub；译本下载也可使用兼容的 HTTPS 镜像。已应用的本地译本可离线使用。
 
 若已启用 SATLI 内置的成就显示插件或其他同类插件，请先停用，避免同时替换成就文字。
@@ -25,14 +25,14 @@
    ```
 
    Steam 安装在其他位置时，请使用实际目录。插件不放在 `steamapps` 游戏目录中，也不需要解压 `.star` 文件。
-4. 启动 Steam，打开左上角 **Steam → Millennium → 插件（Plugins）**，启用 **SATLI lite**，再重启 Steam。
-5. 在 Millennium 中打开 **SATLI lite** 设置页。能看到“成就翻译”和“管理译本”入口，即可开始使用。
+4. 启动 Steam，打开左上角 **Steam → Millennium → Plugins（插件）**，在插件列表中启用 **SATLI lite**。从“Steam”菜单完全退出 Steam，再重新启动，使插件生效。
+5. 打开左上角 **Steam → Millennium Library Manager（Millennium 库管理器）**，找到并选择 **SATLI lite**。进入插件设置页后，点击“管理译本”，即可打开成就翻译管理界面。
 
 找不到 Steam 安装目录或插件未显示时，参见 [安装与启动问题](docs/usage.md#安装与启动问题)。
 
 ## 首次使用
 
-1. 在插件设置页点击“管理译本”；也可打开 Steam 库存中的游戏页面，点击“成就翻译”。
+1. 从 **Steam → Millennium Library Manager → SATLI lite** 打开插件设置页，点击“管理译本”；也可打开 Steam 库存中的游戏页面，点击“成就翻译”。
 2. 等待列表加载；列表为空时，点击右上角“刷新列表”。默认的“我的库存”只显示已有社区译本或本地译本的游戏，包含尚未安装的游戏。
 3. 选择游戏，再选择译本和语言。点击“预览译本”可先查看成就名称与描述。
 4. 点击“下载并应用”。完成后回到 Steam 游戏页面查看成就；页面已打开时，可切换到其他游戏再返回。
