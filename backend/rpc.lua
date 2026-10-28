@@ -5,6 +5,7 @@ local catalog = require("catalog")
 local translations = require("translations")
 local updater = require("updater")
 local steam_library = require("steam_library")
+local external_requests = require("external_requests")
 
 local function response(workflow, operation)
     logger:info(workflow .. " start")
@@ -28,6 +29,15 @@ end
 ---@return string
 function getInstalledGames()
     return response("scan installed games", steam_library.scan)
+end
+
+---@ffi
+---@return string
+function pollExternalRequests()
+    -- Polling is frequent; report failures without logging every heartbeat.
+    local ok, result = pcall(external_requests.poll)
+    return json.encode(ok and { ok = true, data = result }
+        or { ok = false, error = "外部请求队列不可用，请检查目录权限与插件日志" })
 end
 
 ---@ffi

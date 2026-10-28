@@ -30,6 +30,8 @@ Lua 打包前会在 `.generated/backend/` 中转义非 ASCII 字符串，以避�
 
 库存归属由前端读取 Steam `appStore.GetAppOverviewByAppID()` 的 `visible_in_game_list`；已安装筛选由后端读取 `steamapps/libraryfolders.vdf` 和各库的 `appmanifest_*.acf`。安装清单不能代替库存归属。
 
+外部桌面程序通过[本机外部接口 v1](external-api.md)提交翻译 JSON 和查询状态。`external_protocol.lua` 定义字段、结果与错误码，`external_files.lua` 负责受限目录内的文件发布，`external_requests.lua` 处理队列与崩溃恢复。成功导入的事务回执和游戏状态一起保存；Steam 前端自动驱动队列轮询，并在外部导入后刷新管理界面与显示数据。
+
 ## 发布与自更新
 
 版本来自 `millennium.toml`，使用 `MAJOR.MINOR.PATCH`，前后端版本常量由脚本生成。发布时，将同一次构建的 `satli-lite.star` 和 `update.json` 上传到 `GaBoron/SATLI-lite` 的正式 Release，标签使用与包内版本相同的 `vMAJOR.MINOR.PATCH`。`update.json` 内含 Base64 编码的 STAR 包，保留构建脚本生成的内容。

@@ -26,13 +26,14 @@ local function cache(value, text)
     return relative
 end
 
-local function commit(next_state)
+local function commit(next_state, before_save)
     -- Validate capacity before changing the active state, including while globally disabled.
     bridge.build(next_state, document, true)
-    state.commit(next_state)
+    state.commit(next_state, before_save)
 end
 
-local function activate(value, file, language, game, local_edits, enabled)
+local function activate(value, file, language, game, options)
+    options = options or {}
     format.language(language)
     assert(format.contains(value.languages, language), "此译本不包含所选语言")
     local next_state = storage.clone(state.get())
@@ -46,13 +47,14 @@ local function activate(value, file, language, game, local_edits, enabled)
     end
     next_state.apps[value.app_id] = {
         app_id = value.app_id, variant_id = value.variant_id, language = language,
-        enabled = enabled == nil or enabled, source_sha256 = value.source_sha256, file = file,
+        enabled = options.enabled == nil or options.enabled, source_sha256 = value.source_sha256, file = file,
         original_file = previous and previous.original_file or file,
         name = game and game.name or (previous and previous.name or value.app_id),
         contributors = game and game.contributors or (previous and previous.contributors),
-        installed_at = os.time(), local_edits = local_edits or false, history = history,
+        installed_at = os.time(), local_edits = options.local_edits or false, history = history,
+        origin = options.origin or { kind = "community" },
     }
-    commit(next_state)
+    commit(next_state, options.before_save)
     return next_state
 end
 
@@ -70,7 +72,7 @@ function M.install(app_id, variant_id, language)
     local game, variant = catalog.variant(app_id, variant_id)
     local value = M.preview(app_id, variant_id)
     local file = "translations/" .. app_id .. "/" .. variant_id .. "/" .. variant.sha256 .. ".json"
-    return activate(value, file, language, game, false)
+    return activate(value, file, language, game)
 end
 
 function M.toggle(app_id, enabled)
@@ -97,13 +99,16 @@ function M.restore(app_id)
     return next_state
 end
 
-function M.import(text, language)
+function M.import(text, language, options)
     local value = format.decode(text)
+    options = options or {}
+    options.local_edits = true
+    options.origin = options.origin or { kind = "import" }
     local relative = "edits/" .. value.app_id .. "/" .. storage.token() .. ".json"
     storage.write(storage.path(relative), text)
     local snapshot = catalog.get()
     local game = snapshot and snapshot.catalog.games[value.app_id]
-    return activate(value, relative, language, game, true)
+    return activate(value, relative, language, game, options)
 end
 
 function M.export(app_id)
@@ -124,7 +129,9 @@ function M.edit(app_id, api_name, name, description)
     local relative = "edits/" .. app_id .. "/" .. storage.token() .. ".json"
     storage.write(storage.path(relative), text)
     local game = { name = current.name, contributors = current.contributors }
-    return activate(value, relative, current.language, game, true, current.enabled)
+    return activate(value, relative, current.language, game, {
+        local_edits = true, enabled = current.enabled, origin = { kind = "local_edit" },
+    })
 end
 
 function M.bridge()

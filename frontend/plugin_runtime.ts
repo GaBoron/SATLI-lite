@@ -17,6 +17,10 @@ export class PluginRuntime {
   private queue: Promise<unknown> = Promise.resolve();
   private disposed = false;
   private timer?: number;
+  private externalTimer?: number;
+  private externalPolling = false;
+  private externalFailed = false;
+  private externalRevision?: string;
   private onApplied?: () => Promise<void>;
   private view: ViewState = {
     state: { version: 1, apps: {}, settings: { enabled: true, language: 'schinese', auto_translation_updates: false, auto_plugin_updates: true, catalog_base: '' } },
@@ -73,6 +77,8 @@ export class PluginRuntime {
 
   startBackground(onApplied: () => Promise<void>): void {
     this.onApplied = onApplied;
+    void this.pollExternal();
+    this.externalTimer = window.setInterval(() => { void this.pollExternal(); }, 2000);
     void this.synchronize();
     this.timer = window.setInterval(() => { void this.synchronize(); }, 6 * 60 * 60 * 1000);
   }
@@ -80,7 +86,35 @@ export class PluginRuntime {
   dispose(): void {
     this.disposed = true;
     if (this.timer !== undefined) window.clearInterval(this.timer);
+    if (this.externalTimer !== undefined) window.clearInterval(this.externalTimer);
     this.listeners.clear();
+  }
+
+  private async pollExternal(): Promise<void> {
+    if (this.externalPolling || this.disposed) return;
+    this.externalPolling = true;
+    const work = this.queue.then(async () => {
+      if (this.disposed) return;
+      const result = await rpc<{ changed: boolean; revision?: string }>(backend.pollExternalRequests());
+      // A previous response may have been lost after saving an import. The
+      // state generation also reconciles that change on the next good poll.
+      if (result.changed || (result.revision !== undefined && result.revision !== this.externalRevision)) {
+        const snapshot = await rpc<BackendSnapshot>(backend.getState());
+        this.publish({ ...snapshot, libraryAppIds: this.libraryApps(snapshot) });
+        await this.onApplied?.();
+        this.externalRevision = result.revision;
+      }
+    });
+    this.queue = work.catch(() => undefined);
+    try {
+      await work;
+      this.externalFailed = false;
+    } catch {
+      if (!this.externalFailed) console.warn('SATLI lite external request polling failed');
+      this.externalFailed = true;
+    } finally {
+      this.externalPolling = false;
+    }
   }
 
   private async perform<T>(workflow: string, label: string, operation: () => Promise<T>, applied = false): Promise<T> {

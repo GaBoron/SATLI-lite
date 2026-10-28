@@ -1,8 +1,8 @@
 local fs = require("fs")
 local millennium = require("millennium")
 local json = require("json_codec")
+local utils = require("utils")
 local M = {}
-local sequence = 0
 local root
 
 function M.root()
@@ -19,8 +19,8 @@ function M.path(...)
 end
 
 function M.token()
-    sequence = sequence + 1
-    return tostring(os.time()) .. "-" .. tostring(sequence)
+    -- Reloading within the same second must not reuse an edit/cache path.
+    return utils.uuid()
 end
 
 function M.read(path, limit)
@@ -53,15 +53,15 @@ function M.write(path, text)
     local wrote, write_error = file:write(text)
     local closed, close_error = file:close()
     assert(wrote and closed, tostring(write_error or close_error))
-    local backup
     if fs.exists(path) then
-        backup = M.path("history", M.token() .. "-" .. fs.filename(path))
+        local backup = M.path("history", M.token() .. "-" .. fs.filename(path))
         assert(fs.create_directories(fs.parent_path(backup)) ~= nil)
-        assert(fs.rename(path, backup), "无法备份已有数据")
+        assert(fs.copy(path, backup), "无法备份已有数据")
     end
+    -- Preserve the old file until the closed replacement is atomically renamed.
+    -- A crash between backup and publication must not make state.json disappear.
     local renamed, rename_error = fs.rename(temporary, path)
     if not renamed then
-        if backup then assert(fs.rename(backup, path), "数据写入失败，备份保留在历史目录") end
         error("数据写入失败: " .. tostring(rename_error))
     end
 end
