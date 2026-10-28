@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { LANGUAGE_NAMES, TranslationDocument, ViewState } from '../shared/library_types';
+import { LANGUAGE_NAMES, TranslationDocument, ViewState, variantIdentity, installedIdentity } from '../shared/library_types';
 import { PluginRuntime } from './plugin_runtime';
 import { TranslationPreview } from './translation_preview';
 import { exportTranslationFile } from './translation_files';
@@ -62,7 +62,7 @@ export function TranslationDetails({ appId, runtime, view }: { appId: string; ru
     if (mounted.current && selection.current === identity) await loadLocal();
   };
   const canDownload = Boolean(variant?.json && chosenLanguage);
-  const hasUpdate = Boolean(installed && installed.variant_id === chosenVariant && variant && installed.source_sha256 !== variant.sha256);
+  const hasUpdate = Boolean(installed && installed.variant_id === chosenVariant && variant && installedIdentity(installed) !== variantIdentity(variant));
   const editable = Boolean(localPreview && installed && shownPreview?.app_id === installed.app_id
     && shownPreview.variant_id === installed.variant_id && shownPreview.source_sha256 === installed.source_sha256 && chosenLanguage === installed.language);
 

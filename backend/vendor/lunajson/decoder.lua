@@ -469,6 +469,7 @@ local function newdecoder()
 					newpos = newpos+1
 				end
 				pos = newpos
+				if obj[key] ~= nil then decode_error("duplicate object key") end
 				obj[key] = f()  -- parse value
 				newpos = match(json, '^[ \n\r\t]*,[ \n\r\t]*()', pos)
 			until not newpos

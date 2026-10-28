@@ -20,7 +20,7 @@ local function document(entry)
 end
 
 local function cache(value, text)
-    local relative = "translations/" .. value.app_id .. "/" .. value.variant_id .. "/" .. value.source_sha256 .. ".json"
+    local relative = "translations/" .. value.app_id .. "/" .. value.variant_id .. "/" .. format.identity(value, text) .. ".json"
     local path = storage.path(relative)
     if not fs.exists(path) or storage.read(path) ~= text then storage.write(path, text) end
     return relative
@@ -48,6 +48,7 @@ local function activate(value, file, language, game, options)
     next_state.apps[value.app_id] = {
         app_id = value.app_id, variant_id = value.variant_id, language = language,
         enabled = options.enabled == nil or options.enabled, source_sha256 = value.source_sha256, file = file,
+        json_sha256 = value.version == 2 and format.identity(value, assert(storage.read(storage.path(file)))) or nil,
         original_file = previous and previous.original_file or file,
         name = game and game.name or (previous and previous.name or value.app_id),
         contributors = game and game.contributors or (previous and previous.contributors),
@@ -60,7 +61,7 @@ end
 
 function M.preview(app_id, variant_id)
     local game, variant = catalog.variant(app_id, variant_id)
-    local file = "translations/" .. app_id .. "/" .. variant_id .. "/" .. variant.sha256 .. ".json"
+    local file = "translations/" .. app_id .. "/" .. variant_id .. "/" .. format.variant_identity(variant) .. ".json"
     local text = storage.read(storage.path(file))
     if text then return format.decode(text, app_id, variant_id, variant) end
     local value, downloaded = catalog.download(app_id, variant_id)
@@ -71,7 +72,7 @@ end
 function M.install(app_id, variant_id, language)
     local game, variant = catalog.variant(app_id, variant_id)
     local value = M.preview(app_id, variant_id)
-    local file = "translations/" .. app_id .. "/" .. variant_id .. "/" .. variant.sha256 .. ".json"
+    local file = "translations/" .. app_id .. "/" .. variant_id .. "/" .. format.variant_identity(variant) .. ".json"
     return activate(value, file, language, game)
 end
 

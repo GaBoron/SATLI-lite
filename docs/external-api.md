@@ -6,7 +6,7 @@
 
 接口位于 `<Millennium>/config/satli-lite/external/v1/`，其中 `<Millennium>` 是 Millennium 安装目录。插件首次运行后创建目录与 `protocol.json`。客户端可以在 Steam 关闭时创建 `inbox/` 投递，但这不能证明插件已安装。
 
-先检查目标 Steam 安装中的 `millennium/plugins/satli-lite.star` 是否存在，再读取 `protocol.json` 的 `plugin_id`、`plugin_version`、整数 `protocol` 和 `operations`。v1 的操作为 `import`、`query_app`；插件版本独立于协议版本，客户端遇到不支持的协议应停止提交。
+先检查目标 Steam 安装中的 `millennium/plugins/satli-lite.star` 是否存在，再读取 `protocol.json` 的 `plugin_id`、`plugin_version`、整数 `protocol` 和 `operations`。v1 的操作为 `import`、`query_app`；`translation_versions: [1, 2]` 声明可接收的翻译 JSON 格式。缺少该字段的旧插件仅支持格式 1。协议版本、插件版本与 JSON 格式版本相互独立；不兼容时停止提交并提示升级。
 
 `runtime.json` 示例：
 
@@ -81,7 +81,7 @@
 
 示例中的哈希仅为字段占位。实际译本遵循 `translation_format.lua` 的格式：App ID 为不超过十位的非零起始十进制字符串，`variant_id` 为不超过 64 字符的小写字母、数字与短横线标识，`languages` 含目标语言，每个成就在列出的全部语言中都有字符串名称和描述。成就以 API name 为键，不能用显示名称代替。
 
-`source_sha256` 是 64 位小写十六进制的来源标识。直接提交已校验的社区 JSON 时，保留 JSON 的哈希和译本标识；有原始 BIN 时使用该 BIN 原始字节的 SHA-256。没有 BIN 的编辑或转换数据，客户端可对去掉 `source_sha256` 后的译本 JSON 计算 SHA-256：对象键递归按字符顺序排列、数组顺序保留、UTF-8、非 ASCII 字符不转义、无 BOM、无多余空白，`version` 为整数。客户端应保持同一转换规则，以便标识可复现。lite 检查哈希格式，不下载或重建 BIN 验证其真实性；这不是来源认证。
+格式 1 的 `source_sha256` 为源 BIN 的 64 位小写十六进制哈希。格式 2 可以没有 BIN，只包含 `version`、`app_id`、`variant_id`、`languages`、`achievements` 五个字段，不接受 `source_sha256`。直接提交已校验的社区 JSON 时保留其格式和译本标识；无 BIN 数据使用格式 2，不编造来源哈希。格式 2 使用独立的 `json_sha256` 保存当前缓存字节标识，不能将其解释为 BIN 哈希。两种格式都按 API name 匹配文本，检查语言覆盖，拒绝重复 JSON 键和 NUL。
 
 `client_id` 最长 64 字符，使用小写字母、数字、点、短横线，首字符为字母或数字。`source.kind` 必须是 `catalog_json`、`converted` 或 `edited`；可选的 `source.version` 最长 128 UTF-8 字节，用于记录客户端来源版本。上述信息只作来源记录，不授予权限。
 
@@ -124,7 +124,8 @@
 | `saved`、`exists` | 插件状态中已保存此游戏的译本 |
 | `enabled` | 此游戏的开关 |
 | `globally_enabled`、`effective_enabled` | 全局开关、全局与游戏开关均启用 |
-| `variant_id`、`language`、`source_sha256` | 当前译本、选定语言与来源标识 |
+| `variant_id`、`language` | 当前译本与选定语言 |
+| `source_sha256` / `json_sha256` | 格式 1 的 BIN 来源标识 / 格式 2 当前本地 JSON 字节标识；外部请求重新序列化后，后者不应被当作原始下载文件哈希 |
 | `local_edits`、`origin` | 更新保护及来源记录 |
 | `revision`、`updated_at` | 覆盖比较标识与最后一次游戏状态提交时间 |
 

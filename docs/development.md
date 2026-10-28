@@ -24,7 +24,7 @@ Lua 打包前会在 `.generated/backend/` 中转义非 ASCII 字符串，以避�
 - `shared/`：TypeScript 数据类型和共用的成就文本变换。
 - `scripts/`：版本与样式生成、构建打包。
 
-译本使用 Catalog V2 的 `index-v2.json`，配套文件路径为 `files/<app_id>/<variant_id>/UserGameStatsSchema_<app_id>.json`。插件读取 JSON，成就以 API name 为键；格式检查见 `backend/translation_format.lua`。索引的 `variant.sha256` 须与 JSON 的 `source_sha256` 一致，插件用它判断译本更新。
+译本使用 Catalog V2 的 `index-v2.json`，配套文件路径为 `files/<app_id>/<variant_id>/UserGameStatsSchema_<app_id>.json`。插件读取 JSON，成就以 API name 为键；格式检查见 `backend/translation_format.lua`。格式 1 的 `variant.sha256` 须与 JSON 的 `source_sha256` 一致；JSON-only 使用格式 2，不声明 BIN 哈希，按 `variant.json.sha256` 检查原始下载字节并识别社区更新。外部接口在 `protocol.json` 中声明 `translation_versions`，两种格式共用现有导入、历史和激活流程。
 
 本地数据位于 `<Millennium>/config/satli-lite/`。`state.json` 保存设置和译本文件引用，下载文件在 `translations/`，编辑和导入内容在 `edits/`。`original_file` 保留首次应用的文件，可能属于另一个译本，读取时不能用当前的 `variant_id` 校验。旧文件还可能被状态中的历史记录引用，改动存储逻辑时要考虑这些引用。
 

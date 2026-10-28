@@ -2,18 +2,19 @@ import { SteamLibrarySnapshot } from './steam_library_types';
 
 export interface TranslationText { name: string; description: string }
 export interface TranslationDocument {
-  version: 1;
+  version: 1 | 2;
   app_id: string;
   variant_id: string;
-  source_sha256: string;
+  source_sha256?: string;
   languages: string[];
   achievements: Record<string, { translations: Record<string, TranslationText> }>;
 }
 export interface Variant {
-  sha256: string;
+  format?: 'bin' | 'json';
+  sha256?: string;
   languages: string[];
   achievements: number;
-  json?: { version: number; size: number };
+  json?: { version: number; size: number; sha256?: string };
   label?: { zh: string; en: string };
   description?: { zh: string; en: string };
 }
@@ -41,7 +42,8 @@ export interface InstalledTranslation {
   variant_id: string;
   language: string;
   enabled: boolean;
-  source_sha256: string;
+  source_sha256?: string;
+  json_sha256?: string;
   name: string;
   installed_at: number;
   local_edits: boolean;
@@ -53,6 +55,14 @@ export interface PluginUpdate {
   release_url?: string;
   available: boolean;
   pending_restart?: boolean;
+}
+
+export function variantIdentity(variant: Variant): string | undefined {
+  return variant.format === 'json' ? variant.json?.sha256 : variant.sha256;
+}
+
+export function installedIdentity(entry: InstalledTranslation): string | undefined {
+  return entry.json_sha256 ?? entry.source_sha256;
 }
 export interface PluginState {
   version: 1;

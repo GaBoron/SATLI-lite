@@ -125,7 +125,8 @@ function M.start()
     files.check(true)
     files.publish(nil, "protocol", {
         protocol = protocol.VERSION, plugin_id = "com.gaboron.satli-lite", plugin_version = version,
-        operations = json.array({ "import", "query_app" }), max_request_bytes = protocol.MAX_REQUEST_BYTES,
+        operations = json.array({ "import", "query_app" }), translation_versions = json.array({ 1, 2 }),
+        max_request_bytes = protocol.MAX_REQUEST_BYTES,
         max_translation_bytes = 32 * 1024 * 1024, max_batch = MAX_BATCH,
         conflict_policy = "reject-or-compare-and-replace", same_user_only = true,
     })

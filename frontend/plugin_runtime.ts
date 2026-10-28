@@ -1,4 +1,4 @@
-import { CatalogSnapshot, PluginUpdate, Settings, TranslationDocument, ViewState, unwrapFfi } from '../shared/library_types';
+import { CatalogSnapshot, PluginUpdate, Settings, TranslationDocument, ViewState, unwrapFfi, variantIdentity, installedIdentity } from '../shared/library_types';
 import { PLUGIN_VERSION } from '../.generated/version';
 import { SteamLibrarySnapshot } from '../shared/steam_library_types';
 import { catalogLibraryApps } from './steam_library';
@@ -171,7 +171,7 @@ export class PluginRuntime {
       for (const entry of Object.values(this.view.state.apps)) {
         if (this.disposed) return;
         const variant = this.view.catalog.catalog.games[entry.app_id]?.variants[entry.variant_id];
-        if (entry.enabled && !entry.local_edits && variant?.json && variant.sha256 !== entry.source_sha256) {
+        if (entry.enabled && !entry.local_edits && variant?.json && variantIdentity(variant) !== installedIdentity(entry)) {
           try { await this.install(entry.app_id, entry.variant_id, entry.language); } catch { /* Keep previous translation. */ }
         }
       }

@@ -73,6 +73,7 @@ function M.app(current, app_id)
         app_id = app_id, exists = true, saved = true, enabled = entry.enabled,
         globally_enabled = current.settings.enabled, effective_enabled = current.settings.enabled and entry.enabled,
         variant_id = entry.variant_id, language = entry.language, source_sha256 = entry.source_sha256,
+        json_sha256 = entry.json_sha256,
         local_edits = entry.local_edits, origin = entry.origin or { kind = entry.local_edits and "local" or "community" },
         revision = entry.revision, updated_at = entry.updated_at or entry.installed_at,
     }

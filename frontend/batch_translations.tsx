@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { PluginRuntime } from './plugin_runtime';
 import { useRuntime } from './use_runtime';
 import { catalogTranslationApps } from './steam_library';
-import { LANGUAGE_NAMES } from '../shared/library_types';
+import { LANGUAGE_NAMES, variantIdentity, installedIdentity } from '../shared/library_types';
 import { SettingsSection } from './settings_layout';
 import { StatusMessage } from './status_message';
 import { Button, Icon } from './ui_controls';
@@ -52,7 +52,7 @@ export function BatchTranslations({ runtime }: { runtime: PluginRuntime }) {
         const variantId = updateOnly && entry ? entry.variant_id : 'default';
         const language = updateOnly && entry ? entry.language : snapshot.state.settings.language;
         const variant = snapshot.catalog?.catalog.games[appId]?.variants[variantId];
-        if (!variant?.json || !variant.languages.includes(language) || (updateOnly && variant.sha256 === entry?.source_sha256)) { skipped++; continue; }
+        if (!variant?.json || !variant.languages.includes(language) || (updateOnly && entry && variantIdentity(variant) === installedIdentity(entry))) { skipped++; continue; }
         setProgress(`正在处理 ${appId} · ${completed + failed + skipped + 1}/${targets.length}`);
         try { await runtime.install(appId, variantId, language); completed++; } catch { failed++; }
       }

@@ -16,12 +16,16 @@ local function validate(value)
         for variant_id, variant in pairs(game.variants) do
             format.variant_id(variant_id)
             assert(type(variant) == "table" and type(variant.languages) == "table", "译本索引无效")
-            assert(type(variant.sha256) == "string" and #variant.sha256 == 64 and variant.sha256:match("^[0-9a-f]+$"), "译本标识无效")
+            assert(variant.format == nil or variant.format == "bin" or variant.format == "json", "资产格式无效")
+            local identity = variant.format == "json" and variant.json and variant.json.sha256 or variant.sha256
+            assert(type(identity) == "string" and #identity == 64 and identity:match("^[0-9a-f]+$"), "译本标识无效")
+            if variant.format == "json" then assert(variant.sha256 == nil and variant.size == nil, "JSON-only 不能声明 BIN 数据") end
             assert(type(variant.achievements) == "number" and variant.achievements >= 1 and variant.achievements % 1 == 0, "成就数量无效")
             for _, language in ipairs(variant.languages) do format.language(language) end
             if variant.json then
-                assert(type(variant.json) == "table" and variant.json.version == 1 and type(variant.json.size) == "number" and variant.json.size > 0 and variant.json.size <= format.MAX_BYTES and variant.json.size % 1 == 0, "JSON 元数据无效")
+                assert(type(variant.json) == "table" and variant.json.version == (variant.format == "json" and 2 or 1) and type(variant.json.size) == "number" and variant.json.size > 0 and variant.json.size <= format.MAX_BYTES and variant.json.size % 1 == 0, "JSON 元数据无效")
             end
+            assert(variant.format ~= "json" or variant.json, "缺少 JSON 资产")
             variants = variants + 1
         end
         assert(variants >= 1 and variants <= 16, "译本数量无效")
@@ -58,7 +62,7 @@ function M.variant(app_id, variant_id)
     local cached = assert(M.get(), "请先刷新翻译库")
     local game = assert(cached.catalog.games[app_id], "翻译库未收录此游戏")
     local variant = assert(game.variants[variant_id], "找不到这个译本版本")
-    assert(variant.json and variant.json.version == 1, "数据源尚未提供 JSON，请先发布翻译库更新")
+    assert(variant.json and (variant.json.version == 1 or variant.json.version == 2), "数据源尚未提供兼容 JSON")
     return game, variant, cached.base
 end
 

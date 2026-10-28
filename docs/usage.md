@@ -81,9 +81,11 @@
 
 在管理窗口底部点击“导入本地译本”，选择 SATLI lite 导出的 JSON，或翻译库提供的兼容 JSON。导入成功后会应用文件中的译本并选中对应游戏；默认下载语言在文件中不可用时，使用文件提供的第一种语言。
 
-导入支持不超过 32 MiB 的兼容 JSON 文件。普通文本、任意 JSON、CSV、BIN 和 ZIP 不能作为本地译本直接导入；将扩展名改为 `.json` 不会转换文件格式。需要制作完整 BIN 或向社区投稿时，可使用 [SATLI](https://github.com/GaBoron/SATLI) 并参考 [翻译库说明](https://github.com/GaBoron/steam-achievement-translation-library)。
+导入支持翻译库格式 1 与格式 2，文件不超过 32 MiB；格式 2 可独立于 BIN 存在，不要求源 BIN 哈希。两种格式都拒绝重复键、NUL 和缺失语言字段。普通文本、任意 JSON、CSV、BIN 和 ZIP 不能作为本地译本直接导入；将扩展名改为 `.json` 不会转换文件格式。需要制作完整 BIN 或向社区投稿时，可使用 [SATLI](https://github.com/GaBoron/SATLI) 并参考 [翻译库说明](https://github.com/GaBoron/steam-achievement-translation-library)。
 
-导入会替换该游戏当前应用的译本。文件来自其他人时，建议导入后用“查看 / 编辑”核对内容；已有本地编辑应先导出备份。
+SATLI 等桌面程序也可通过[公开本机接口](external-api.md)提交 JSON；已有译本或本地编辑时须显式授权覆盖。外部导入与本地编辑一样受自动更新保护。
+
+在插件界面直接导入会替换该游戏当前应用的译本。文件来自其他人时，建议导入后用“查看 / 编辑”核对内容；已有本地编辑应先导出备份。
 
 ## 自动更新与手动更新
 
