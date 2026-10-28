@@ -115,5 +115,13 @@ end
 ---@ffi
 ---@return string
 function getBridgeSnapshot()
-    return translations.bridge()
+    return translations.bridge_transport()
+end
+
+---@ffi
+---@param token string
+---@param index number
+---@return string
+function getBridgeSnapshotChunk(token, index)
+    return translations.bridge_chunk(token, index)
 end

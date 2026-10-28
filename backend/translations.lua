@@ -8,6 +8,10 @@ local bridge = require("bridge_snapshot")
 local M = {}
 local bridge_identity
 local bridge_text
+local bridge_token
+local bridge_chunks
+local BRIDGE_DIRECT_BYTES = 1024 * 1024
+local BRIDGE_CHUNK_BYTES = 512 * 1024
 
 local function document(entry)
     assert(type(entry.file) == "string" and entry.file:match("^[a-z0-9/%-]+%.json$") and not entry.file:find("..", 1, true), "本地译本路径无效")
@@ -129,7 +133,43 @@ function M.bridge()
     if bridge_identity == identity then return bridge_text end
     local text = bridge.build(current, document)
     bridge_identity, bridge_text = identity, text
+    bridge_token = storage.token()
+    bridge_chunks = nil
     return text
+end
+
+-- FFI replies must fit Millennium's 8 MiB limit, including JSON escaping.
+-- Keep small snapshots compatible with direct readers and chunk larger ones.
+function M.bridge_transport()
+    local text = M.bridge()
+    if #text <= BRIDGE_DIRECT_BYTES then return text end
+    if not bridge_chunks then
+        bridge_chunks = {}
+        local first = 1
+        while first <= #text do
+            local last = math.min(first + BRIDGE_CHUNK_BYTES - 1, #text)
+            -- Lua indexes bytes; the next reply must start at a UTF-8 boundary.
+            while last < #text do
+                local next_byte = text:byte(last + 1)
+                if next_byte < 128 or next_byte >= 192 then break end
+                last = last - 1
+            end
+            table.insert(bridge_chunks, text:sub(first, last))
+            first = last + 1
+        end
+    end
+    return json.encode({
+        transport = "satli-bridge-chunks-v1", token = bridge_token,
+        count = #bridge_chunks, bytes = #text,
+    })
+end
+
+function M.bridge_chunk(token, index)
+    -- Recheck state before every reply so a reader cannot mix snapshot versions.
+    M.bridge()
+    assert(type(token) == "string" and token == bridge_token, "翻译数据已变化，请重试")
+    assert(type(index) == "number" and index % 1 == 0 and bridge_chunks and bridge_chunks[index], "翻译数据分块无效")
+    return bridge_chunks[index]
 end
 
 return M

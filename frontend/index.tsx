@@ -1,5 +1,6 @@
 import { definePlugin } from 'millennium';
 import { DisplayOverrideController } from '../shared/display_override';
+import { createBridgeSnapshotLoader } from '../shared/bridge_transport';
 import { installSteamApiOverrides } from './steam_api_override';
 import { PluginRuntime } from './plugin_runtime';
 import { attachLibraryButton } from './library_context';
@@ -24,7 +25,11 @@ export default definePlugin(async () => {
   const runtime = new PluginRuntime();
   await runtime.initialize();
   const removeStylesheet = attachStylesheet(document);
-  controller = new DisplayOverrideController(document, () => backend.getBridgeSnapshot(), async () => 'satli');
+  const loadSnapshot = createBridgeSnapshotLoader(
+    () => backend.getBridgeSnapshot(),
+    (token, index) => backend.getBridgeSnapshotChunk(token, index),
+  );
+  controller = new DisplayOverrideController(document, loadSnapshot, async () => 'satli');
   await controller.start();
   const removeOverrides = installSteamApiOverrides(controller);
   const translations = createTranslationModal(runtime);

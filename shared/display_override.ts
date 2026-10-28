@@ -146,6 +146,7 @@ export class DisplayOverrideController {
       if (this.stopped) return;
       const identity = `${language}\n${payload}`;
       if (identity === this.lastPayload) {
+        this.lastError = '';
         for (const node of this.appliedText.keys()) if (!node.isConnected) this.appliedText.delete(node);
         for (const element of this.appliedAttributes.keys()) if (!element.isConnected) this.appliedAttributes.delete(element);
         // Steam's library renderer can update an already-mounted activity view
@@ -172,7 +173,7 @@ export class DisplayOverrideController {
     } catch (error) {
       const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
       if (message !== this.lastError) {
-        console.warn('SATLI lite display refresh failed');
+        console.warn(`SATLI lite display refresh failed: ${message}`);
         this.lastError = message;
       }
     } finally {
