@@ -13,7 +13,7 @@
 ```json
 {
   "protocol": 1,
-  "plugin_version": "0.1.2",
+  "plugin_version": "0.2.0",
   "session_id": "2d6ce1a6-4d27-4a47-b955-cfc8225a6218",
   "backend_running": true,
   "frontend_attached": true,

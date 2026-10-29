@@ -1,7 +1,7 @@
 [plugin]
 id = "com.gaboron.satli-lite"
 name = "SATLI lite"
-version = "0.1.2"
+version = "0.2.0"
 author = "GaBoron"
 description = "在 Steam 库存中下载、预览和应用社区成就翻译。"
 
