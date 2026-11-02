@@ -6,6 +6,7 @@ local translations = require("translations")
 local protocol = require("external_protocol")
 local files = require("external_files")
 local version = require("generated_version")
+local library = require("external_library")
 local M = {}
 local running, frontend_attached = false, false
 local session = utils.uuid()
@@ -118,6 +119,8 @@ function M.poll()
         if processed >= MAX_BATCH then break end
     end
     runtime(true)
+    local published = pcall(library.poll, state.get(), state.generation(), translations.export)
+    if not published then logger:warn("external library snapshot unavailable") end
     return { changed = changed, revision = session .. ":" .. state.generation() }
 end
 
