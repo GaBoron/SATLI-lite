@@ -5,7 +5,8 @@
   "scripts": {
     "prepare": "node scripts/version.mjs && starlight lsp",
     "typecheck": "node scripts/version.mjs && starlight lsp && tsc --noEmit && tsc --noEmit -p webview/tsconfig.json",
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.cjs"
   },
   "devDependencies": {
     "@steambrew/starlight": "1.1.6",
